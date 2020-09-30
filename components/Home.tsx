@@ -11,6 +11,8 @@ const screenWidth = Dimensions.get('window').width;
 
 const logoDimentions = Math.floor(screenHeight*0.1);
 
+
+
 function ViewOrderData(props:{item:order}): JSX.Element{
   const {_id,clientId,creationDate,dueDate,orderNumber,reserves,status,clientData} = props.item;
   const f = StyleSheet.create({
@@ -127,11 +129,13 @@ export default function Home(props:any){
       setOrders(await getOrders(activeDate.date));
     })()    
   },[])
-  return (
+  return (    
     <SafeAreaView style={s.screen}>          
       <View style={{alignItems:"center",justifyContent:"center"}}>
         <View style={{height:(logoDimentions*0.5+10),backgroundColor:colorPalet.white,width:screenWidth,flexDirection:'row',justifyContent:'flex-end'}}>
-          <TouchableOpacity style={{justifyContent:'center',height:(logoDimentions*0.5+10),width:(screenWidth*0.1)}}>
+          <TouchableOpacity 
+            style={{justifyContent:'center',height:(logoDimentions*0.5+10),width:(screenWidth*0.1)}} 
+            onPress={()=>props.navigation.navigate('newOrder')}>
             <AntDesign name="pluscircle" size={logoDimentions*0.4} color={colorPalet.darkGreen} />
           </TouchableOpacity>
         </View>
@@ -155,18 +159,8 @@ export default function Home(props:any){
           renderItem={({item}:any)=>(<ViewOrderData item={item}/>)}
         />
       </View>
-    </SafeAreaView>
-  )
-  /*
-  <VirtualizedList 
-    data={orders}
-    initialNumToRender={4}
-    getItem={(data,index)=>data[index]}
-    getItemCount={(data)=>data.length}        
-    keyExtractor={(item:any)=>item._id}
-    renderItem={renderObj}
-  />
-  */
+    </SafeAreaView>    
+  )  
 }
 const s = StyleSheet.create({
   screen:{
