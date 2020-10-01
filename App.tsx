@@ -18,11 +18,6 @@ const Tab = createBottomTabNavigator();
 
 export default function App() {
 
-  const homePng = require('./assets/home-button.png');
-  const clientPng = require('./assets/user-shape.png');
-  const productPng = require('./assets/android-logo-1.png');
-  const searchPng = require('./assets/searching-magnifying-glass.png');
-
   let [fontsLoaded] = useFonts({
     'AlegreyaSans-Bold': require('./assets/fonts/AlegreyaSans-Bold.otf'),
     'AlegreyaSans-Regular': require('./assets/fonts/AlegreyaSans-Regular.otf')

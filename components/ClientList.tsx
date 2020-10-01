@@ -3,10 +3,8 @@ import {View,Text,Button,Platform,StyleSheet,Dimensions,TouchableOpacity,Animate
 import { SafeAreaView } from 'react-native-safe-area-context';
 import DateTimePicker, { Event } from '@react-native-community/datetimepicker';
 import {colorPalet} from '../util/util';
-import FadingView from '../testComp/fadingComp'
-import {ClientList} from './ClientList'
+import FadingView from './fadingComp'
 
-const monthNames = ["January", "February", "March", "April", "May", "June","July", "August", "September", "October", "November", "December"];
 const dummyData = [
   {
     "address": {
@@ -156,104 +154,56 @@ const dummyData = [
     "__v": 0
   }
 ]
-
-type dateObj = {
-  day: string,
-  month:string,
-  hour:string,
-  minute:string,
-  period: string
+function fListItem({item}){  
+  return (
+    <Text style={s.flatListItem}>{`${item.name}`}</Text>
+  )
 }
-
-function toDateObj(date:Date): dateObj {
-  const tempHour = date.getHours();
-
-  const newDateObj = {
-    day:    `${date.getDate()}`,
-    month:  monthNames[date.getMonth()],
-    hour:   tempHour > 12 ? `${tempHour-12}` : `${tempHour}`,
-    minute: `${date.getMinutes()}`,
-    period: tempHour >= 12 ? 'PM' : 'AM'
-  };
+const AnimatedFlatList = Animated.createAnimatedComponent(FlatList);
+export function ClientList(props:any) {
   
-  return newDateObj;
-}
-
-export default function NewOrder(props:any){
-  type tMode = "date" | "time" | "datetime" | "countdown" | undefined ;
-
-  const [date, setDate] = React.useState(new Date());
-  const [dateObj,setDateObj] = React.useState(toDateObj(date));
-  const [mode, setMode] = React.useState('date'as tMode);
-  const [show, setShow] = React.useState(false);
+  const [open,setOpen] = React.useState(false);
+  const [list,setList]  = React.useState([]);
 
   const stretchAnim = React.useRef(new Animated.Value(0)).current;
-
-  const stretchF  = ()=>{
+  const stretcher = () => {
+    if(open){            
+      animate(0);            
+      console.log('retracting');
+    }else{      
+      animate(400);            
+      console.log('expanding');
+    }
+    setOpen(!open);
+  } 
+  const animate = (size:number,time:number = 1000) => {    
     Animated.timing(stretchAnim, {
-      useNativeDriver:false,
-      toValue: 300,
-      duration: 1000,
-    });    
-  }
-  const contractF = ()=>{
-    Animated.timing(stretchAnim, {
-      useNativeDriver:false,
-      toValue: 0,
-      duration: 1000,
-    });
-  }
+      useNativeDriver: false,
+      toValue: size,
+      duration: time,
+    }).start();
+  };
   
-  const onChange = (event:Event, selectedDate:Date|undefined):void => {
-    const currentDate = selectedDate || date;
-    setShow(Platform.OS === 'ios');
-    setDate(currentDate);
-  };
-
-  const showMode = (currentMode:tMode) => {
-    setMode(currentMode);
-    setShow(true);    
-  };
-  const showDatepicker = () => {
-    showMode('date');
-  };
-  const showTimepicker = () => {
-    showMode('time');
-  };  
-
-  React.useEffect(()=>{
-    setDateObj(toDateObj(date));
-  },[date]);
-
   return (
-    <SafeAreaView style={s.container}>
-      
-      <Text style={s.title}>
-        Set this order due date:
-      </Text>
-      <View>
-        <TouchableOpacity onPress={showDatepicker}>
-          <Text style={s.hours}>{`${dateObj.month}, ${dateObj.day}`}</Text>
-        </TouchableOpacity>
-        <TouchableOpacity onPress={showTimepicker}>
-          <Text style={s.hours}>{`${dateObj.hour}  :  ${dateObj.minute}  ${dateObj.period}`}</Text>
-        </TouchableOpacity>                
-      </View>
-      {show ? (
-        <DateTimePicker
-          testID="dateTimePicker"
-          value={date}
-          mode={mode}
-          //is24Hour={false}
-          display="default"
-          onChange={onChange}
-        />
-      ) : undefined}
-      <ClientList />      
-      <Button onPress={()=>props.navigation.goBack()} title='volta'/>         
-    </SafeAreaView>
+    <View>  
+      <TouchableOpacity>
+        <Text style={s.title} onPress={()=>{stretcher()}}> Select Client </Text>
+      </TouchableOpacity> 
+      <AnimatedFlatList
+        data={dummyData}
+        style={{maxHeight:stretchAnim}}                
+        refreshing={list.length===0}
+        keyExtractor={item=>item._id}
+        renderItem={fListItem}                
+      />
+    </View>
   );
 }
+/**
+ <TouchableOpacity style={{backgroundColor:'black',zIndex:0}}>
+        <Text style={[s.title]} onPress={()=>{console.log('teste'),strechOut()}}> Select Client </Text>
+      </TouchableOpacity> 
+ */
 const windowHeight  = Dimensions.get('window').height;
 const windowWidth   = Dimensions.get('window').width;
 

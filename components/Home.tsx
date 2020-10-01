@@ -140,7 +140,7 @@ export default function Home(props:any){
           </TouchableOpacity>
         </View>
         <View style={{height:(logoDimentions*0.5+10),width:screenWidth}}></View>
-        <Image source={require('../assets/icons/Logo_App.png')} style={{height:logoDimentions,width:logoDimentions,position:'absolute'}}/>
+        <Image source={require('../assets/icons/logo.png')} style={{height:logoDimentions,width:logoDimentions,position:'absolute'}}/>
       </View>
       <Calendar orders={orders} activeDate={activeDate.date} month={activeMonth} changeMonth={changeMonth} onDatePress={onDatePress}/>              
       <View style={s.centralContainer}>
