@@ -161,25 +161,32 @@ const s = StyleSheet.create({
   upperHalf:{    
     height:circularSize/2,
     width:circularSize,       
+    overflow:'hidden'
   },
   ActiveUpperHalf:{
     backgroundColor:colorPalet.green,    
     height:circularSize/2,
     width:circularSize,
-    borderTopRightRadius:Math.floor(circularSize/2),
-    borderTopLeftRadius:Math.floor(circularSize/2),
+    //borderTopRightRadius:Math.floor(circularSize/2),
+    //borderTopLeftRadius:Math.floor(circularSize/2),
+    borderTopRightRadius:circularSize,
+    borderTopLeftRadius:circularSize,
+    overflow:'hidden'
   }, 
   lowerHalf:{     
     height:circularSize/2,
     width:circularSize,        
+    overflow:'hidden'
   },
   ActiveLowerHalf:{ 
     backgroundColor:colorPalet.green,    
     height:circularSize/2,
     width:circularSize,    
-    borderBottomRightRadius:Math.floor(circularSize/2),
-    borderBottomLeftRadius:Math.floor(circularSize/2),
-    
+    borderBottomRightRadius:circularSize,
+    borderBottomLeftRadius:circularSize,
+    //borderBottomRightRadius:Math.floor(circularSize/2),
+    //borderBottomLeftRadius:Math.floor(circularSize/2),
+    overflow:'hidden'
   },   
   weekday:{        
     justifyContent:'center',

@@ -3,7 +3,7 @@ import {View,Text,Button,Platform,StyleSheet,Dimensions,TouchableOpacity,Animate
 import { SafeAreaView } from 'react-native-safe-area-context';
 import DateTimePicker, { Event } from '@react-native-community/datetimepicker';
 import {colorPalet} from '../util/util';
-import FadingView from './fadingComp'
+
 
 const dummyData = [
   {

@@ -17,6 +17,7 @@ export default function HomeNavigator(props:any){
   return (
     <Tab.Navigator         
       initialRouteName='home'
+      lazy={true}      
       tabBarOptions={{
         activeTintColor:colorPalet.darkGreen,      
         showLabel:false    

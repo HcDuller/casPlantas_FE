@@ -78,3 +78,4 @@ export const colorPalet= {
   purple:     '#7b74ad',
   white:      '#ffffff'
 }
+export const endpoint = 'http://192.168.15.50:3000'

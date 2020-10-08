@@ -1,10 +1,14 @@
 import React from 'react';
-import {View,Text,Button,Platform,StyleSheet,Dimensions,TouchableOpacity,Animated,FlatList} from 'react-native';
+import {View,Text,Platform,StyleSheet,Dimensions,TouchableOpacity,VirtualizedList,Image} from 'react-native';
+import {ProgressBarAndroid} from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import DateTimePicker, { Event } from '@react-native-community/datetimepicker';
-import {colorPalet} from '../util/util';
-import FadingView from '../testComp/fadingComp'
-import {ClientList} from './ClientList'
+import {colorPalet,endpoint} from '../util/util';
+import {ClientList} from './ClientList';
+import OrderCard from './AuxComponents/OrderCard';
+import CleanHeader from './AuxComponents/CleanHeader';
+import {ordersGetRequest} from '../util/requests'
+
 
 const monthNames = ["January", "February", "March", "April", "May", "June","July", "August", "September", "October", "November", "December"];
 const dummyData = [
@@ -156,54 +160,52 @@ const dummyData = [
     "__v": 0
   }
 ]
-
+const logoHeight = Dimensions.get('window').height*0.1;
 type dateObj = {
   day: string,
   month:string,
+  'twelveHour':string,
   hour:string,
   minute:string,
   period: string
 }
-
+const images = {
+  leftArrow:  require('../assets/icons/Arrow_L.png'),
+  rightArrow: require('../assets/icons/Arrow_R.png')
+}
 function toDateObj(date:Date): dateObj {
   const tempHour = date.getHours();
 
   const newDateObj = {
     day:    `${date.getDate()}`,
     month:  monthNames[date.getMonth()],
-    hour:   tempHour > 12 ? `${tempHour-12}` : `${tempHour}`,
-    minute: `${date.getMinutes()}`,
+    twelveHour:   tempHour > 12 ? `${tempHour-12}` : `${tempHour}`,
+    hour: `${tempHour}`,
+    minute: `${date.getMinutes()>9?'':0}${date.getMinutes()}`,
     period: tempHour >= 12 ? 'PM' : 'AM'
   };
   
   return newDateObj;
 }
-
+async function getOrders(activeDate:Date){    
+  try{          
+    const minDate = new Date(activeDate.getFullYear(),activeDate.getMonth(),activeDate.getDate(),0);
+    const maxDate = new Date(activeDate.getFullYear(),activeDate.getMonth(),activeDate.getDate(),23,59,59,999);
+    const response = await ordersGetRequest({minDueDate:minDate,maxDueDate:maxDate});       
+    return response;      
+  }catch(e){
+    console.log(e);
+  }
+}
 export default function NewOrder(props:any){
   type tMode = "date" | "time" | "datetime" | "countdown" | undefined ;
 
   const [date, setDate] = React.useState(new Date());
   const [dateObj,setDateObj] = React.useState(toDateObj(date));
   const [mode, setMode] = React.useState('date'as tMode);
+  const [orders,setOrders] = React.useState([]);
   const [show, setShow] = React.useState(false);
 
-  const stretchAnim = React.useRef(new Animated.Value(0)).current;
-
-  const stretchF  = ()=>{
-    Animated.timing(stretchAnim, {
-      useNativeDriver:false,
-      toValue: 300,
-      duration: 1000,
-    });    
-  }
-  const contractF = ()=>{
-    Animated.timing(stretchAnim, {
-      useNativeDriver:false,
-      toValue: 0,
-      duration: 1000,
-    });
-  }
-  
   const onChange = (event:Event, selectedDate:Date|undefined):void => {
     const currentDate = selectedDate || date;
     setShow(Platform.OS === 'ios');
@@ -212,7 +214,7 @@ export default function NewOrder(props:any){
 
   const showMode = (currentMode:tMode) => {
     setMode(currentMode);
-    setShow(true);    
+    setShow(!show);    
   };
   const showDatepicker = () => {
     showMode('date');
@@ -223,21 +225,35 @@ export default function NewOrder(props:any){
 
   React.useEffect(()=>{
     setDateObj(toDateObj(date));
+    (async ()=>{setOrders(await getOrders(date))})();    
   },[date]);
-
+  function listComponent(){
+    return(
+      <View style={s.toDoList}>      
+        <VirtualizedList           
+          data={orders.sort((el,el2)=>{ return el.dueDate.getHours()>el2.dueDate.getHours() ? 1 : -1 })}
+          initialNumToRender={4}
+          getItem={(data:Array<any> ,index:number)=>data[index]}
+          getItemCount={(data)=>data.length}        
+          keyExtractor={(item:any)=>item._id}
+          renderItem={({item}:any)=>(<OrderCard cWidth={windowWidth*0.7} item={item}/>)}
+        />
+      </View>
+    )
+  }
   return (
-    <SafeAreaView style={s.container}>
-      
-      <Text style={s.title}>
-        Set this order due date:
-      </Text>
-      <View>
-        <TouchableOpacity onPress={showDatepicker}>
-          <Text style={s.hours}>{`${dateObj.month}, ${dateObj.day}`}</Text>
+    <SafeAreaView style={s.container}>      
+      <CleanHeader logoHeight={logoHeight}/>    
+      <ProgressBarAndroid styleAttr='Horizontal' indeterminate={false} progress={0.5} color={colorPalet.darkGreen}/>
+      <View style={s.navigationLine}>
+        <TouchableOpacity style={s.navigationTouchable} onPress={()=>props.navigation.goBack()}>
+          <Image source={images.leftArrow} style={s.navigationIcons}/>
+          <Text style={s.navigationText}>{`OH NO`}</Text>          
         </TouchableOpacity>
-        <TouchableOpacity onPress={showTimepicker}>
-          <Text style={s.hours}>{`${dateObj.hour}  :  ${dateObj.minute}  ${dateObj.period}`}</Text>
-        </TouchableOpacity>                
+        <TouchableOpacity style={s.navigationTouchable} onPress={()=>props.navigation.navigate('editOrder',{'_id':'teste'})}>
+          <Text style={[s.navigationText,{color:colorPalet.darkGreen}]}>{`GO GO`}</Text>
+          <Image source={images.rightArrow} style={[s.navigationIcons,{tintColor:colorPalet.darkGreen}]}/>
+        </TouchableOpacity>          
       </View>
       {show ? (
         <DateTimePicker
@@ -248,9 +264,40 @@ export default function NewOrder(props:any){
           display="default"
           onChange={onChange}
         />
-      ) : undefined}
-      <ClientList />      
-      <Button onPress={()=>props.navigation.goBack()} title='volta'/>         
+      ) : undefined}            
+      <View style={s.centralContainer}>
+        <TouchableOpacity style={s.centralContainerComponents} onPress={()=>{setDate(new Date(date.valueOf()-86400000))}}>
+          <Image source={images.leftArrow} style={s.centralContainerIcons}/>
+        </TouchableOpacity>
+        <TouchableOpacity style={s.centralContainerComponents} onPress={showDatepicker}>
+          <Text style={s.title}>{`${dateObj.month}, ${dateObj.day}`}</Text>
+        </TouchableOpacity>
+        <TouchableOpacity style={s.centralContainerComponents} onPress={()=>{setDate(new Date(date.valueOf()+86400000))}}>
+          <Image source={images.rightArrow} style={s.centralContainerIcons} />
+        </TouchableOpacity>
+      </View>
+      <View style={s.centralContainer}>
+        <TouchableOpacity style={s.centralContainerComponents} onPress={()=>{setDate(new Date(date.valueOf()-1800000))}}>
+          <Image source={images.leftArrow} style={s.centralContainerIcons}/>
+        </TouchableOpacity>
+        <TouchableOpacity style={s.centralContainerComponents} onPress={showTimepicker}>
+          <Text style={s.title}>{`${dateObj.twelveHour}  :  ${dateObj.minute}  ${dateObj.period}`}</Text>
+        </TouchableOpacity>  
+        <TouchableOpacity style={s.centralContainerComponents} onPress={()=>{setDate(new Date(date.valueOf()+1800000))}}>
+          <Image source={images.rightArrow} style={s.centralContainerIcons} />
+        </TouchableOpacity>
+      </View>
+      
+
+      
+      {orders.length>0? listComponent() : (<View style={[s.centralContainer,{justifyContent:'center'}]}><View style={s.centralContainerComponents}><Text style={s.title}>All day is available</Text></View></View>)}                  
+                 
+
+      <View style={s.centralContainer}>
+        <View style={[s.centralContainerComponents]}>
+          <Text style={s.title}>Implementation pending</Text>
+        </View>
+      </View>
     </SafeAreaView>
   );
 }
@@ -258,18 +305,20 @@ const windowHeight  = Dimensions.get('window').height;
 const windowWidth   = Dimensions.get('window').width;
 
 const s = StyleSheet.create({
-  container:{
-    flexDirection:'column',
-    height:'100%',
-    justifyContent:'center',
+  container:{  
+    backgroundColor:colorPalet.grey,
+    height:windowHeight,        
+    flex:1
     //alignContent:'center',
     //alignItems:'center'    
   },
+  
   title:{
     fontFamily:'AlegreyaSans-Bold',
-    fontSize:windowHeight*0.03,
+    fontSize:windowHeight*0.023,
     color:colorPalet.darkGrey,
-    textAlign:'center'
+    textAlign:'center',
+    alignSelf:'center'
   },
   hours:{
     fontFamily:'AlegreyaSans-Bold',
@@ -281,5 +330,62 @@ const s = StyleSheet.create({
     color:colorPalet.darkGrey,
     fontSize:windowHeight*0.03,
     textAlign:'center'
+  },
+  centralContainer:{
+    backgroundColor:colorPalet.white,
+    width:windowWidth*0.8,    
+    flexDirection:'row',
+    alignItems:'stretch',
+    justifyContent:'space-between',    
+    borderRadius:10,
+    marginVertical:windowHeight*0.01,
+    marginHorizontal:windowWidth*0.1
+  },
+  centralContainerComponents:{
+    alignContent:'center',
+    justifyContent:'center',
+    minWidth:windowWidth*0.25,
+    height:windowHeight*0.06
+  },
+  centralContainerIcons:{    
+    alignSelf:'center',    
+    height:windowHeight*0.02,
+    width:windowHeight*0.02
+  },
+  toDoList:{
+    minHeight:windowHeight*0.06,
+    maxHeight:windowHeight*0.2,    
+    width:windowWidth*0.8,
+    marginHorizontal:windowWidth*0.1,
+    alignContent:'center',
+    alignSelf:'center',
+    backgroundColor:colorPalet.white,    
+    alignItems:'center',
+    marginTop:10,
+    paddingTop:5,
+    paddingBottom:10,
+    borderRadius:10  
+  },
+  navigationLine:{
+    height:windowHeight*0.05,
+    paddingHorizontal:windowWidth*0.04,
+    width:'100%',
+    flexDirection:'row',
+    alignContent:'flex-start',
+    alignItems:'flex-start',
+    justifyContent:'space-between'
+  },
+  navigationTouchable:{
+    flexDirection:'row'
+  },
+  navigationText:{
+    fontFamily:'AlegreyaSans-Regular',
+    fontSize:windowHeight*0.022,
+    color:colorPalet.darkGrey,    
+    alignSelf:'center'
+  },
+  navigationIcons:{
+    height:windowHeight*0.035,
+    width:windowHeight*0.035
   }
 })

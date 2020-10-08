@@ -4,12 +4,15 @@ import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { useFonts } from 'expo-font';
 import { AppLoading } from 'expo';
 import { NavigationContainer } from '@react-navigation/native';
-import { createStackNavigator } from '@react-navigation/stack';
+import { createStackNavigator,CardStyleInterpolators,StackNavigationOptions } from '@react-navigation/stack';
 
 const Stack = createStackNavigator();
 //import Home from './components/Home';
 import HomeNavigation from './components/HomeNavigation';
-import NewOrder from './components/NewOrder';
+import NewOrder   from  './components/NewOrder';
+import EditOrder  from  './components/EditOrder'
+import { forSlideLeft } from '@react-navigation/stack/lib/typescript/src/TransitionConfigs/HeaderStyleInterpolators';
+import { forHorizontalIOS } from '@react-navigation/stack/lib/typescript/src/TransitionConfigs/CardStyleInterpolators';
 
 
 const Tab = createBottomTabNavigator();
@@ -24,68 +27,30 @@ export default function App() {
   });
   if(!fontsLoaded){
     return <AppLoading />
-  }else{
-    /**
-    return (
-      <NavigationContainer>
-        <Tab.Navigator         
-          initialRouteName='home'
-          tabBarOptions={{
-            activeTintColor:'#21b548',          
-          }}        
-          >        
-          <Tab.Screen 
-            name='home' 
-            options={{
-              tabBarLabel:'Home',
-              tabBarIcon:({color,size})=>(<Image source={homePng} style={{width:30,height:30,tintColor:color}}/>)
-            }} 
-            component={Home}
-          />
-          <Tab.Screen 
-            name='products' 
-            options={{
-              tabBarLabel:'Products',
-              tabBarIcon:({color,size})=>(<Image source={productPng} style={{width:30,height:30,tintColor:color}}/>)
-            }}
-            component={Home}/>
-          <Tab.Screen 
-            name='clients' 
-            options={{
-              tabBarLabel:'Clients',
-              tabBarIcon:({color,size})=>(<Image source={clientPng} style={{width:30,height:30,tintColor:color}}/>)
-            }}
-          component={Home}/>
-          <Tab.Screen 
-            name='search' 
-            options={{
-              tabBarLabel:'Search',
-              tabBarIcon:({color,size})=>(<Image source={searchPng} style={{width:30,height:30,tintColor:color}}/>)
-            }}
-            component={Home}/>          
-        </Tab.Navigator>      
-        <Stack.Screen
-          name='newOrder'
-          component={NewOrder}
-        />
-      </NavigationContainer>
-    )
-     */
+  }else{    
+    const screenOptions : StackNavigationOptions = {
+      headerShown:false,
+      cardStyleInterpolator : CardStyleInterpolators.forHorizontalIOS
+    }
     return (
       <NavigationContainer>
         <Stack.Navigator
-          screenOptions={{headerShown:false}}
+          screenOptions={screenOptions}
           >
           <Stack.Screen 
             name='homeNavigation'
             component={HomeNavigation}
             
-          />
-          <Stack.Screen 
+          />                              
+          <Tab.Screen 
             name='newOrder'
             component={NewOrder}
-          />
-        </Stack.Navigator>                
+          />        
+          <Tab.Screen 
+            name='editOrder'
+            component={EditOrder}
+          />                 
+        </Stack.Navigator>                                
       </NavigationContainer>
     )
   }     
