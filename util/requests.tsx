@@ -1,3 +1,6 @@
+import axios from 'axios'
+
+
 interface orderQuery{
   minFromDate:Date,
   maxFromDate:Date,
@@ -14,7 +17,15 @@ interface order{
   clientId?     :string,
   orderNumber?  :number,
 }
-
+interface product{
+  active?: boolean,
+  class?: string,
+  components?: string[],
+  _id?: string,
+  name?: string,
+  value?: number,
+  productId?: number  
+}
 const globalHeader : HeadersInit ={
   'Accept'      : 'application/json',
   'Content-Type': 'application/json'
@@ -22,6 +33,57 @@ const globalHeader : HeadersInit ={
 
 const endPoint = 'http://192.168.15.50:3000'
 
+export async function ordersGetRequest(filters?:Partial<orderQuery>){
+  try{    
+    const worker = axios.create({
+      baseURL:endPoint,
+      headers:globalHeader,
+      timeout:1000            
+    })
+    const {data} = await worker.get('/order',{
+      params:filters
+    });
+    data.forEach((el:any)=>{
+      el.creationDate = new Date(el.creationDate);
+      el.dueDate      = new Date(el.dueDate);
+    });      
+    return data;   
+     
+  }catch(e){
+    throw(e);    
+  }    
+}
+export async function ordersPostRequest(order:order){
+	try{
+		const worker = axios.create({
+			baseURL:endPoint,
+			headers:globalHeader,
+			timeout:1000			
+		});
+		const {data} = await worker.post('/order',{order})
+	}catch(e){
+		throw(e);
+	}
+}
+export async function getProductsRequest(product?:product) {
+  try{
+		const worker = axios.create({
+			baseURL:endPoint,
+			headers:globalHeader,
+			timeout:1000
+		});
+		let params = {};
+		if(product){
+			params = {...product};
+		}
+		const {data} = await worker.get('/product',params);
+		return data
+	}catch(e){
+		throw(e);
+	}
+}
+
+/*
 function orderQueryParser(key:string,value:Date|number){
   if(key === 'minFromDate' ||  key === 'maxFromDate' ||  key === 'minDueDate' ||  key === 'maxDueDate'){
     return `${key}=${((value as Date).toISOString()).replace(' ','+')}`
@@ -31,8 +93,7 @@ function orderQueryParser(key:string,value:Date|number){
     throw new Error(`filter parameter ${key} is invalid`);
   }  
 }
-export async function ordersGetRequest(filters?:Partial<orderQuery>){
-  try{    
+----------------------------------------------------getOrders-init
     let url = endPoint;
     url+='/order';    
     if(filters){
@@ -48,16 +109,11 @@ export async function ordersGetRequest(filters?:Partial<orderQuery>){
         'Content-Type': 'application/json'
       },method:'GET'
     }    
+    
     const response = await (await fetch(url,localOptions)).json();   
     response.forEach((el:any)=>{
       el.creationDate = new Date(el.creationDate);
       el.dueDate      = new Date(el.dueDate);
-    });    
-    return response;
-  }catch(e){
-    throw(e);    
-  }    
-}
-export async function orderPostRequest(type:'new'|'update',order:order){
-
-}
+    });   
+----------------------------------------------------getOrders-end
+*/

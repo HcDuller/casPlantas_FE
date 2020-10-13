@@ -35,6 +35,15 @@ export interface order {
     __v: number
   } 
 }
+export interface product{
+  _id: string,
+  active: boolean,
+  class: string,
+  name: string,
+  value: number,
+  productId: number,
+  components: product[]
+}
 export type day      = {date:Date,activeMonth:boolean,orders:order[]|[]}
 export type weekLine = day[];
 export type calendar = weekLine[];
@@ -76,6 +85,7 @@ export const colorPalet= {
   grey:       '#edeef0',
   orange:     '#de9f00',
   purple:     '#7b74ad',
-  white:      '#ffffff'
+  white:      '#ffffff',
+  red:        '#af132d'
 }
 export const endpoint = 'http://192.168.15.50:3000'

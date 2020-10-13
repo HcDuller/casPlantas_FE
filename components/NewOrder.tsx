@@ -1,14 +1,13 @@
 import React from 'react';
 import {View,Text,Platform,StyleSheet,Dimensions,TouchableOpacity,VirtualizedList,Image} from 'react-native';
-import {ProgressBarAndroid} from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import DateTimePicker, { Event } from '@react-native-community/datetimepicker';
 import {colorPalet,endpoint} from '../util/util';
 import {ClientList} from './ClientList';
 import OrderCard from './AuxComponents/OrderCard';
 import CleanHeader from './AuxComponents/CleanHeader';
-import {ordersGetRequest} from '../util/requests'
-
+import {ordersGetRequest,ordersPostRequest} from '../util/requests'
+import ProgressBar from './AuxComponents/ProgressBar'
 
 const monthNames = ["January", "February", "March", "April", "May", "June","July", "August", "September", "October", "November", "December"];
 const dummyData = [
@@ -205,6 +204,7 @@ export default function NewOrder(props:any){
   const [mode, setMode] = React.useState('date'as tMode);
   const [orders,setOrders] = React.useState([]);
   const [show, setShow] = React.useState(false);
+  const [loading,setLoading] = React.useState(false);
 
   const onChange = (event:Event, selectedDate:Date|undefined):void => {
     const currentDate = selectedDate || date;
@@ -222,7 +222,20 @@ export default function NewOrder(props:any){
   const showTimepicker = () => {
     showMode('time');
   };  
-
+  function simpleDelay(time:number){
+    return new Promise((resolve)=>{return setTimeout(resolve,time)})
+  }
+  async function saveAndGo(){
+    try{
+      setLoading(true);      
+      await ordersPostRequest({dueDate:date});
+      await simpleDelay(2000);
+      setLoading(false);
+      props.navigation.navigate('editOrder',{'_id':'teste'})
+    }catch(e){
+      console.log(e)
+    }
+  }
   React.useEffect(()=>{
     setDateObj(toDateObj(date));
     (async ()=>{setOrders(await getOrders(date))})();    
@@ -241,20 +254,21 @@ export default function NewOrder(props:any){
       </View>
     )
   }
+  
   return (
     <SafeAreaView style={s.container}>      
-      <CleanHeader logoHeight={logoHeight}/>    
-      <ProgressBarAndroid styleAttr='Horizontal' indeterminate={false} progress={0.5} color={colorPalet.darkGreen}/>
+      <CleanHeader logoHeight={logoHeight}/>                
       <View style={s.navigationLine}>
         <TouchableOpacity style={s.navigationTouchable} onPress={()=>props.navigation.goBack()}>
           <Image source={images.leftArrow} style={s.navigationIcons}/>
           <Text style={s.navigationText}>{`OH NO`}</Text>          
-        </TouchableOpacity>
-        <TouchableOpacity style={s.navigationTouchable} onPress={()=>props.navigation.navigate('editOrder',{'_id':'teste'})}>
+        </TouchableOpacity>        
+        <TouchableOpacity style={s.navigationTouchable} onPress={saveAndGo}>    
           <Text style={[s.navigationText,{color:colorPalet.darkGreen}]}>{`GO GO`}</Text>
           <Image source={images.rightArrow} style={[s.navigationIcons,{tintColor:colorPalet.darkGreen}]}/>
         </TouchableOpacity>          
       </View>
+      {loading?(<ProgressBar width={Dimensions.get('window').width} height={Dimensions.get('window').height*0.005} color={colorPalet.darkGreen} duration={2000}/>):undefined}
       {show ? (
         <DateTimePicker
           testID="dateTimePicker"
@@ -297,7 +311,7 @@ export default function NewOrder(props:any){
         <View style={[s.centralContainerComponents]}>
           <Text style={s.title}>Implementation pending</Text>
         </View>
-      </View>
+      </View>      
     </SafeAreaView>
   );
 }
