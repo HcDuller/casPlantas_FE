@@ -1,4 +1,5 @@
 import axios from 'axios'
+import {client,isClient} from '../util/util';
 
 
 interface orderQuery{
@@ -60,7 +61,8 @@ export async function ordersPostRequest(order:order){
 			headers:globalHeader,
 			timeout:1000			
 		});
-		const {data} = await worker.post('/order',{order})
+    const {data} = await worker.post('/order',{order});    
+    return data 
 	}catch(e){
 		throw(e);
 	}
@@ -79,10 +81,28 @@ export async function getProductsRequest(product?:product) {
 		const {data} = await worker.get('/product',params);
 		return data
 	}catch(e){
-		throw(e);
+		throw e;
 	}
 }
-
+export async function getClients() : Promise<client[]> {
+  try{
+    const worker = axios.create({
+			baseURL:endPoint,
+			headers:globalHeader,
+			timeout:1000
+		});
+		let params = {};		
+    const {data} = await worker.get('/entities');
+    const clients : client[] = data.filter((el:any)=>{
+      if(isClient(el)){
+        return el;
+      }
+    });
+		return clients
+  }catch(e){
+    throw e;
+  }
+}
 /*
 function orderQueryParser(key:string,value:Date|number){
   if(key === 'minFromDate' ||  key === 'maxFromDate' ||  key === 'minDueDate' ||  key === 'maxDueDate'){

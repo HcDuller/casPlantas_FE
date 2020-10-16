@@ -52,9 +52,9 @@ export default function Products(props:any) : JSX.Element{
       <View style={s.centralContainer}>
         {loadingProds && prods.length>0 ? undefined : 
           <FlatList 
-            data={prods}
-            renderItem={({item}:{item:product})=>(<ProdCard height={height*0.08} width={width*0.8} data={item} key={item._id}/>)}
-            keyExtractor={({item}:{item:product}) => item?._id}
+            data={prods.map((el:product)=>{return {id:el._id,...el}})}
+            renderItem={({item}:{item:product})=>(<ProdCard height={height*0.08} width={width*0.8} data={item} key={item?._id}/>)}
+            
           />
         }        
       </View>      

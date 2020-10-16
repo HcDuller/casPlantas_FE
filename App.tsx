@@ -11,8 +11,7 @@ const Stack = createStackNavigator();
 import HomeNavigation from './components/HomeNavigation';
 import NewOrder   from  './components/NewOrder';
 import EditOrder  from  './components/EditOrder'
-import { forSlideLeft } from '@react-navigation/stack/lib/typescript/src/TransitionConfigs/HeaderStyleInterpolators';
-import { forHorizontalIOS } from '@react-navigation/stack/lib/typescript/src/TransitionConfigs/CardStyleInterpolators';
+
 
 
 const Tab = createBottomTabNavigator();

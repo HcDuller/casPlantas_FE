@@ -14,8 +14,9 @@ export interface order {
     value: number,
     createdAt: Date,
     lastUpdate: Date,
-    orderId: Date,
-    productId: string}[] | {}[], 
+    orderId: Date,    
+    productId: string,
+    components: product[]}[] | {}[],     
   clientData?: {
     _id: string, 
     address: { 
@@ -32,7 +33,8 @@ export interface order {
     anniversary?: Date,
     since: Date,
     name: string,
-    __v: number
+    __v: number,
+    purpose: 'maintenance'|'sale'|'shopping'
   } 
 }
 export interface product{
@@ -44,6 +46,34 @@ export interface product{
   productId: number,
   components: product[]
 }
+export interface customDateObj{  
+  month:[string,number],
+  weekDay:[string,number],
+  day:string,
+  year:string,
+  hour:string,
+  minute:string
+}
+export interface client{
+  address: {
+    addressType: string
+    street: string,
+    number: number,
+    detail: string,
+    district: string,
+    town: string,
+    estate: string
+  },
+  phones: string[],
+  doc: string,
+  instagram: string,
+  anniversary: Date,
+  since: Date,
+  _id: string,
+  name: string,
+  __v: any
+}
+
 export type day      = {date:Date,activeMonth:boolean,orders:order[]|[]}
 export type weekLine = day[];
 export type calendar = weekLine[];
@@ -78,14 +108,56 @@ export function calendarArray(date:Date,events?: order[]) : calendar{
   ]
   return result
 }
-export const colorPalet= {
-  darkGreen : '#8eb878',
-  green:      '#c7dab0',
-  darkGrey:   '#5b5a5d',
-  grey:       '#edeef0',
-  orange:     '#de9f00',
+export const colorPalet= {  
   purple:     '#7b74ad',
   white:      '#ffffff',
-  red:        '#af132d'
+  red:        '#af132d',
+  green:      '#c7dab0',  
+  grey:       '#edeef0',
+  orange:     '#de9f00',  
+  darkGrey:   '#5b5a5d',  
+  darkGreen : '#8eb878',
+  darkOrange: '#f8e0cc',  
+}
+export const fonts={
+  regular:'AlegreyaSans-Regular',
+  bold:'AlegreyaSans-Bold'
 }
 export const endpoint = 'http://192.168.15.50:3000'
+export function dateStringFromDate(date:Date) : customDateObj {
+  const months  = ["January","February","March","April","May","June","July","August","September","October","November","December"];
+  const weekDay = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+  const dtObj : customDateObj = {    
+    month:    [months[date.getMonth()],date.getMonth()+1],
+    weekDay:  [weekDay[date.getDay()] ,date.getDay()],
+    day:      `${date.getDate()}`,
+    year:     `${date.getFullYear()}`,
+    hour:     date.getHours()   < 12 ? `0${date.getHours()}`      : `${date.getHours()}`,
+    minute:   date.getMinutes() < 10 ? `0${date.getMinutes()}`  : `${date.getMinutes()}`,
+  }
+  return dtObj
+}
+export function isClient(client:any) : client is client{
+  const conditions : boolean[] = [];
+  const existingKeys : string[] = Object.keys(client);
+  if(existingKeys.find(el=>el==='address')){
+    conditions.push(true);    
+    existingKeys.find(el=>el==='addressType') ?  conditions.push(true) : conditions.push(false);
+    existingKeys.find(el=>el==='street')      ?  conditions.push(true) : conditions.push(false);
+    existingKeys.find(el=>el==='number')      ?  conditions.push(true) : conditions.push(false);
+    existingKeys.find(el=>el==='detail')      ?  conditions.push(true) : conditions.push(false);
+    existingKeys.find(el=>el==='district')    ?  conditions.push(true) : conditions.push(false);
+    existingKeys.find(el=>el==='town')        ?  conditions.push(true) : conditions.push(false);
+    existingKeys.find(el=>el==='estate')      ?  conditions.push(true) : conditions.push(false);
+  }else{
+    conditions.push(false);
+  }
+  existingKeys.find(el=>el==='phones')     ?  conditions.push(true) : conditions.push(false) ;
+  existingKeys.find(el=>el==='doc')        ?  conditions.push(true) : conditions.push(false) ;
+  existingKeys.find(el=>el==='instagram')  ?  conditions.push(true) : conditions.push(false) ;
+  existingKeys.find(el=>el==='anniversary')?  conditions.push(true) : conditions.push(false) ;
+  existingKeys.find(el=>el==='since')      ?  conditions.push(true) : conditions.push(false) ;
+  existingKeys.find(el=>el==='_id')        ?  conditions.push(true) : conditions.push(false) ;
+  existingKeys.find(el=>el==='name')       ?  conditions.push(true) : conditions.push(false) ;
+  return existingKeys.every(el=>el);
+}

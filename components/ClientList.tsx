@@ -1,9 +1,9 @@
 import React from 'react';
-import {View,Text,Button,Platform,StyleSheet,Dimensions,TouchableOpacity,Animated,FlatList} from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
-import DateTimePicker, { Event } from '@react-native-community/datetimepicker';
-import {colorPalet} from '../util/util';
+import {View,Text,Button,Platform,StyleSheet,Dimensions,TouchableOpacity,TouchableHighlight,Animated,FlatList} from 'react-native';
+import {colorPalet,client,fonts} from '../util/util';
 
+const windowHeight  = Dimensions.get('window').height;
+const windowWidth   = Dimensions.get('window').width;
 
 const dummyData = [
   {
@@ -154,13 +154,9 @@ const dummyData = [
     "__v": 0
   }
 ]
-function fListItem({item}){  
-  return (
-    <Text style={s.flatListItem}>{`${item.name}`}</Text>
-  )
-}
+
 const AnimatedFlatList = Animated.createAnimatedComponent(FlatList);
-export function ClientList(props:any) {
+export function ClientList(props:{clientList: client[] | [],onSelect:(clientId:string)=>void}) {
   
   const [open,setOpen] = React.useState(false);
   const [list,setList]  = React.useState([]);
@@ -168,11 +164,9 @@ export function ClientList(props:any) {
   const stretchAnim = React.useRef(new Animated.Value(0)).current;
   const stretcher = () => {
     if(open){            
-      animate(0);            
-      console.log('retracting');
+      animate(0);                  
     }else{      
-      animate(400);            
-      console.log('expanding');
+      animate(150);                  
     }
     setOpen(!open);
   } 
@@ -182,20 +176,31 @@ export function ClientList(props:any) {
       toValue: size,
       duration: time,
     }).start();
-  };
-  
-  return (
-    <View>  
+  };  
+  function fListItem({item}){  
+    return (
       <TouchableOpacity>
-        <Text style={s.title} onPress={()=>{stretcher()}}> Select Client </Text>
-      </TouchableOpacity> 
-      <AnimatedFlatList
-        data={dummyData}
-        style={{maxHeight:stretchAnim}}                
-        refreshing={list.length===0}
-        keyExtractor={item=>item._id}
-        renderItem={fListItem}                
-      />
+        <View style={s.flatListItem}>
+          <Text style={s.flatListText}>{`${item.name}`}</Text>
+        </View>
+      </TouchableOpacity>
+    )
+  }
+  return (
+    <View style={s.centralContainer}>
+      <View style={s.centralContainerComponents}>  
+        <TouchableOpacity style={{minWidth:windowWidth*0.25,minHeight:windowHeight*0.06,justifyContent:'center'}}>
+          <Text style={s.title} onPress={()=>{stretcher()}}> Select Client </Text>
+        </TouchableOpacity> 
+        {props.clientList.length===0? undefined : (<AnimatedFlatList
+          data={props.clientList}
+          style={{maxHeight:stretchAnim,width:windowWidth*0.8}}                
+          refreshing={list.length===0}
+          keyExtractor={item=>item._id}
+          renderItem={fListItem}                
+        />)}
+        
+      </View>
     </View>
   );
 }
@@ -204,8 +209,6 @@ export function ClientList(props:any) {
         <Text style={[s.title]} onPress={()=>{console.log('teste'),strechOut()}}> Select Client </Text>
       </TouchableOpacity> 
  */
-const windowHeight  = Dimensions.get('window').height;
-const windowWidth   = Dimensions.get('window').width;
 
 const s = StyleSheet.create({
   container:{
@@ -215,10 +218,26 @@ const s = StyleSheet.create({
     //alignContent:'center',
     //alignItems:'center'    
   },
+  centralContainer:{
+    backgroundColor:colorPalet.white,
+    width:windowWidth*0.8,    
+    flexDirection:'row',
+    alignItems:'stretch',
+    justifyContent:'space-between',    
+    borderRadius:10,
+    marginVertical:windowHeight*0.01,
+    marginHorizontal:windowWidth*0.1
+  },
+  centralContainerComponents:{
+    alignContent:'center',
+    justifyContent:'center',
+    minWidth:windowWidth*0.25,
+    minHeight:windowHeight*0.06,    
+  },
   title:{
-    fontFamily:'AlegreyaSans-Bold',
-    fontSize:windowHeight*0.03,
-    color:colorPalet.darkGrey,
+    fontFamily:fonts.bold,
+    fontSize:windowHeight*0.022,
+    color:colorPalet.darkGrey,    
     textAlign:'center'
   },
   hours:{
@@ -227,9 +246,16 @@ const s = StyleSheet.create({
     color:colorPalet.darkGrey,
     textAlign:'center'
   },
-  flatListItem:{
+  flatListItem:{                    
+    height:windowHeight*0.04,
+    paddingHorizontal:windowWidth*0.05,        
+    justifyContent:'center',    
+    borderBottomWidth:1,
+    borderBottomColor:colorPalet.grey
+  },
+  flatListText:{
+    fontFamily:fonts.bold,
     color:colorPalet.darkGrey,
-    fontSize:windowHeight*0.03,
-    textAlign:'center'
+    fontSize:windowHeight*0.022,    
   }
 })

@@ -1,13 +1,15 @@
 import React from 'react';
-import {View,Text,Platform,StyleSheet,Dimensions,TouchableOpacity,VirtualizedList,Image} from 'react-native';
+import {View,Text,Platform,StyleSheet,Dimensions,TouchableOpacity,VirtualizedList,Image,TextInput} from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import DateTimePicker, { Event } from '@react-native-community/datetimepicker';
-import {colorPalet,endpoint} from '../util/util';
+import {colorPalet,client, isClient} from '../util/util';
 import {ClientList} from './ClientList';
 import OrderCard from './AuxComponents/OrderCard';
 import CleanHeader from './AuxComponents/CleanHeader';
-import {ordersGetRequest,ordersPostRequest} from '../util/requests'
+import {ordersGetRequest,ordersPostRequest,getClients} from '../util/requests'
 import ProgressBar from './AuxComponents/ProgressBar'
+import NavigationRow  from './AuxComponents/NavigationRow';
+import { TouchableHighlight } from 'react-native-gesture-handler';
 
 const monthNames = ["January", "February", "March", "April", "May", "June","July", "August", "September", "October", "November", "December"];
 const dummyData = [
@@ -199,19 +201,20 @@ async function getOrders(activeDate:Date){
 export default function NewOrder(props:any){
   type tMode = "date" | "time" | "datetime" | "countdown" | undefined ;
 
-  const [date, setDate] = React.useState(new Date());
-  const [dateObj,setDateObj] = React.useState(toDateObj(date));
-  const [mode, setMode] = React.useState('date'as tMode);
-  const [orders,setOrders] = React.useState([]);
-  const [show, setShow] = React.useState(false);
-  const [loading,setLoading] = React.useState(false);
+  const [date, setDate]             = React.useState(new Date());
+  const [dateObj,setDateObj]        = React.useState(toDateObj(date));
+  const [mode, setMode]             = React.useState('date'as tMode);
+  const [orders,setOrders]          = React.useState([]);
+  const [show, setShow]             = React.useState(false);
+  const [loading,setLoading]        = React.useState(false);
+  const [clientName,setClientName]  = React.useState('');  
+  const [clientList,setClientList]  = React.useState<client[] | []>([]);
 
   const onChange = (event:Event, selectedDate:Date|undefined):void => {
     const currentDate = selectedDate || date;
     setShow(Platform.OS === 'ios');
     setDate(currentDate);
   };
-
   const showMode = (currentMode:tMode) => {
     setMode(currentMode);
     setShow(!show);    
@@ -225,26 +228,38 @@ export default function NewOrder(props:any){
   function simpleDelay(time:number){
     return new Promise((resolve)=>{return setTimeout(resolve,time)})
   }
+  async function fetchClients(){
+    try{
+      const clients = await getClients();            
+      setClientList(clients);
+    }catch(e){
+      throw e;
+    }
+  }
+  
   async function saveAndGo(){
     try{
       setLoading(true);      
-      await ordersPostRequest({dueDate:date});
+      const response = await ordersPostRequest({dueDate:date});            
       await simpleDelay(2000);
       setLoading(false);
-      props.navigation.navigate('editOrder',{'_id':'teste'})
+      props.navigation.navigate('editOrder',{order:response});
     }catch(e){
       console.log(e)
     }
   }
   React.useEffect(()=>{
     setDateObj(toDateObj(date));
-    (async ()=>{setOrders(await getOrders(date))})();    
-  },[date]);
+    (async ()=>{
+      await fetchClients();
+      setOrders(await getOrders(date))})();    
+  },[date,loading]);  
+    
   function listComponent(){
     return(
       <View style={s.toDoList}>      
         <VirtualizedList           
-          data={orders.sort((el,el2)=>{ return el.dueDate.getHours()>el2.dueDate.getHours() ? 1 : -1 })}
+          data={orders.sort((el,el2)=>{ return el.dueDate.valueOf()>el2.dueDate.valueOf() ? 1 : -1 })}
           initialNumToRender={4}
           getItem={(data:Array<any> ,index:number)=>data[index]}
           getItemCount={(data)=>data.length}        
@@ -256,19 +271,9 @@ export default function NewOrder(props:any){
   }
   
   return (
-    <SafeAreaView style={s.container}>      
-      <CleanHeader logoHeight={logoHeight}/>                
-      <View style={s.navigationLine}>
-        <TouchableOpacity style={s.navigationTouchable} onPress={()=>props.navigation.goBack()}>
-          <Image source={images.leftArrow} style={s.navigationIcons}/>
-          <Text style={s.navigationText}>{`OH NO`}</Text>          
-        </TouchableOpacity>        
-        <TouchableOpacity style={s.navigationTouchable} onPress={saveAndGo}>    
-          <Text style={[s.navigationText,{color:colorPalet.darkGreen}]}>{`GO GO`}</Text>
-          <Image source={images.rightArrow} style={[s.navigationIcons,{tintColor:colorPalet.darkGreen}]}/>
-        </TouchableOpacity>          
-      </View>
-      {loading?(<ProgressBar width={Dimensions.get('window').width} height={Dimensions.get('window').height*0.005} color={colorPalet.darkGreen} duration={2000}/>):undefined}
+    <SafeAreaView style={s.container}>            
+      <CleanHeader logoHeight={logoHeight}/>                      
+      <NavigationRow loading={loading} ohNoPress={()=>props.navigation.goBack()} goGoPress={saveAndGo}/>      
       {show ? (
         <DateTimePicker
           testID="dateTimePicker"
@@ -301,14 +306,10 @@ export default function NewOrder(props:any){
           <Image source={images.rightArrow} style={s.centralContainerIcons} />
         </TouchableOpacity>
       </View>
-      
-
-      
-      {orders.length>0? listComponent() : (<View style={[s.centralContainer,{justifyContent:'center'}]}><View style={s.centralContainerComponents}><Text style={s.title}>All day is available</Text></View></View>)}                  
-                 
-
+      <ClientList clientList={clientList} onSelect={(a:string)=>{}} />
+      {orders.length>0? listComponent() : (<View style={[s.centralContainer,{justifyContent:'center'}]}><View style={s.centralContainerComponents}><Text style={s.title}>All day is available</Text></View></View>)}                                   
       <View style={s.centralContainer}>
-        <View style={[s.centralContainerComponents]}>
+        <View style={[s.centralContainerComponents]}>          
           <Text style={s.title}>Implementation pending</Text>
         </View>
       </View>      
