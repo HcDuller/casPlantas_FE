@@ -257,7 +257,7 @@ export default function NewOrder(props:any){
     
   function listComponent(){
     return(
-      <View style={s.toDoList}>      
+      <View style={s.toDoList}>              
         <VirtualizedList           
           data={orders.sort((el,el2)=>{ return el.dueDate.valueOf()>el2.dueDate.valueOf() ? 1 : -1 })}
           initialNumToRender={4}
@@ -402,5 +402,5 @@ const s = StyleSheet.create({
   navigationIcons:{
     height:windowHeight*0.035,
     width:windowHeight*0.035
-  }
+  },  
 })

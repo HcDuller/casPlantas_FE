@@ -1,167 +1,30 @@
 import React from 'react';
-import {View,Text,Button,Platform,StyleSheet,Dimensions,TouchableOpacity,TouchableHighlight,Animated,FlatList} from 'react-native';
+import {View,Text,Image,StyleSheet,Dimensions,TouchableOpacity,Animated,FlatList,TextInput} from 'react-native';
 import {colorPalet,client,fonts} from '../util/util';
 
 const windowHeight  = Dimensions.get('window').height;
 const windowWidth   = Dimensions.get('window').width;
 
-const dummyData = [
-  {
-    "address": {
-      "addressType": "",
-      "street": "",
-      "number": null,
-      "detail": "",
-      "district": "",
-      "town": "",
-      "estate": ""
-    },
-    "phones": [
-      "a"
-    ],
-    "doc": "",
-    "instagram": "isso eh um teste",
-    "anniversary": "2020-08-24T18:17:34.815Z",
-    "since": "2020-08-24T18:17:34.815Z",
-    "_id": "5f4404531c0ce002908a8de1",
-    "name": "Bruno Bredariol",
-    "__v": 1
-  },
-  {
-    "address": {
-      "addressType": "",
-      "street": "",
-      "number": null,
-      "detail": "",
-      "district": "",
-      "town": "",
-      "estate": ""
-    },
-    "phones": [
-      "862315862"
-    ],
-    "doc": "",
-    "instagram": "",
-    "anniversary": "2020-08-21T21:07:26.066Z",
-    "since": "2014-08-22T21:07:26.066Z",
-    "_id": "5f40411660eab43504cabbae",
-    "name": "Camila Pontes",
-    "__v": 0
-  },
-  {
-    "address": {
-      "addressType": "Rua",
-      "street": "Wiliam Furneau",
-      "number": 140,
-      "detail": "",
-      "district": "Santo Elias",
-      "town": "Sao Paulo",
-      "estate": "Sao Paulo"
-    },
-    "phones": [
-      "862315862"
-    ],
-    "doc": "",
-    "instagram": "",
-    "anniversary": "2020-08-21T21:07:26.066Z",
-    "since": "2012-08-21T21:07:26.066Z",
-    "_id": "5f40411360eab43504cabbad",
-    "name": "Henrique de Campos Duller",
-    "__v": 0
-  },
-  {
-    "address": {
-      "addressType": "",
-      "street": "",
-      "number": null,
-      "detail": "",
-      "district": "",
-      "town": "",
-      "estate": ""
-    },
-    "phones": [
-      "862315862"
-    ],
-    "doc": "",
-    "instagram": "",
-    "anniversary": "2020-08-21T21:07:26.066Z",
-    "since": "2020-08-21T21:07:26.066Z",
-    "_id": "5f40411f60eab43504cabbb1",
-    "name": "Jade Jado Anjos",
-    "__v": 0
-  },
-  {
-    "address": {
-      "addressType": "",
-      "street": "",
-      "number": null,
-      "detail": "",
-      "district": "",
-      "town": "",
-      "estate": ""
-    },
-    "phones": [
-      "862315862"
-    ],
-    "doc": "",
-    "instagram": "",
-    "anniversary": "2020-08-21T21:07:26.066Z",
-    "since": "2010-08-21T21:07:26.066Z",
-    "_id": "5f4037da60eab43504cabbac",
-    "name": "Joao Abidu Jajaja",
-    "__v": 0
-  },
-  {
-    "address": {
-      "addressType": "",
-      "street": "",
-      "number": null,
-      "detail": "",
-      "district": "",
-      "town": "",
-      "estate": ""
-    },
-    "phones": [
-      "862315862"
-    ],
-    "doc": "",
-    "instagram": "",
-    "anniversary": "2020-08-21T21:07:26.066Z",
-    "since": "2016-08-21T21:07:26.066Z",
-    "_id": "5f40411960eab43504cabbaf",
-    "name": "Juliana Bunda Mole de Campos",
-    "__v": 0
-  },
-  {
-    "address": {
-      "addressType": "",
-      "street": "",
-      "number": null,
-      "detail": "",
-      "district": "",
-      "town": "",
-      "estate": ""
-    },
-    "phones": [
-      "862315862"
-    ],
-    "doc": "",
-    "instagram": "",
-    "anniversary": "2020-08-21T21:07:26.066Z",
-    "since": "2020-08-21T21:07:26.066Z",
-    "_id": "5f40411c60eab43504cabbb0",
-    "name": "Julio Akira Oriental",
-    "__v": 0
-  }
-]
-
+type newClientItem = {
+  _id:string,
+  onPress:()=>void,
+  newClient:boolean  
+}
 const AnimatedFlatList = Animated.createAnimatedComponent(FlatList);
-export function ClientList(props:{clientList: client[] | [],onSelect:(clientId:string)=>void}) {
+const icons = {
+  search: require('../assets/icons/Search.png'),
+  delete: require('../assets/icons/Delete.png'),
+}
+export function ClientList(props:{clientList: client[] | [] | newClientItem[],onSelect:(clientId:string)=>void}) {
   
   const [open,setOpen] = React.useState(false);
   const [list,setList]  = React.useState([]);
+  const [placeholder,setPlaceHolder] = React.useState('Select a client');
+  
+  const inputRef = React.useRef(null);
 
   const stretchAnim = React.useRef(new Animated.Value(0)).current;
+  const horizontalTranslate = React.useRef(new Animated.Value(0)).current;
   const stretcher = () => {
     if(open){            
       animate(0);                  
@@ -171,13 +34,25 @@ export function ClientList(props:{clientList: client[] | [],onSelect:(clientId:s
     setOpen(!open);
   } 
   const animate = (size:number,time:number = 1000) => {    
-    Animated.timing(stretchAnim, {
+    //Animated.timing(stretchAnim, {
+    //  useNativeDriver: false,
+    //  toValue: size,
+    //  duration: time,
+    //}).start();
+    const stretcherAnim = Animated.timing(stretchAnim, {
       useNativeDriver: false,
       toValue: size,
       duration: time,
-    }).start();
+    });
+    const translater = Animated.timing(horizontalTranslate,{
+      useNativeDriver:true,
+      toValue:size === 0 ? 0 : windowWidth,
+      duration:time
+    });
+    stretcherAnim.start();
+    //Animated.parallel([stretcherAnim,translater]).start();    
   };  
-  function fListItem({item}){  
+  function fListItem({item}){        
     return (
       <TouchableOpacity>
         <View style={s.flatListItem}>
@@ -186,29 +61,56 @@ export function ClientList(props:{clientList: client[] | [],onSelect:(clientId:s
       </TouchableOpacity>
     )
   }
+  function AddNewClient(props:any): JSX.Element{
+    return (
+      <TouchableOpacity>
+        <View style={s.addNewClientButton}>
+          <Text style={s.addNewClientText}>Add New Client</Text>
+        </View>
+      </TouchableOpacity>
+    )
+  }
   return (
-    <View style={s.centralContainer}>
-      <View style={s.centralContainerComponents}>  
-        <TouchableOpacity style={{minWidth:windowWidth*0.25,minHeight:windowHeight*0.06,justifyContent:'center'}}>
-          <Text style={s.title} onPress={()=>{stretcher()}}> Select Client </Text>
-        </TouchableOpacity> 
-        {props.clientList.length===0? undefined : (<AnimatedFlatList
-          data={props.clientList}
-          style={{maxHeight:stretchAnim,width:windowWidth*0.8}}                
-          refreshing={list.length===0}
-          keyExtractor={item=>item._id}
-          renderItem={fListItem}                
-        />)}
+    <View style={s.centralContainer}>      
+      <View style={s.centralContainerComponents}>                    
+          <View style={[s.centralContainerComponents,{flexDirection:'row'}]}>
+            <TextInput 
+              ref={inputRef} 
+              placeholder='Select a Client' 
+              style={[s.title,{width:windowWidth*0.66,textAlign:'left',paddingRight:10}]} 
+              onFocus={()=>{stretcher()}}
+              onBlur={()=>{stretcher()}}
+              />
+
+              <TouchableOpacity onPress={()=>{inputRef.current?.isFocused() ? inputRef.current.blur() : inputRef.current.focus()}}>
+                <Image source={inputRef.current?.isFocused() ? icons.delete : icons.search} 
+                  style={
+                    {height:windowHeight*0.03,
+                    width:windowHeight*0.03,
+                    tintColor: (inputRef.current?.isFocused() ? colorPalet.red : colorPalet.green)
+                    }
+                  }
+                />                
+              </TouchableOpacity>
+          </View>
+        {props.clientList.length===0? undefined : (
+        <View>          
+          <AnimatedFlatList
+            data={props.clientList}
+            ListHeaderComponent={AddNewClient}
+            style={{maxHeight:stretchAnim,width:windowWidth*0.8}}                
+            refreshing={list.length===0}
+            keyExtractor={item=>item._id}
+            renderItem={fListItem}                
+          />
+        </View>)}
         
       </View>
     </View>
   );
 }
-/**
- <TouchableOpacity style={{backgroundColor:'black',zIndex:0}}>
-        <Text style={[s.title]} onPress={()=>{console.log('teste'),strechOut()}}> Select Client </Text>
-      </TouchableOpacity> 
- */
+//{transform:[{translateX:((horizontalTranslate as unknown) as number)}]}
+
 
 const s = StyleSheet.create({
   container:{
@@ -231,14 +133,15 @@ const s = StyleSheet.create({
   centralContainerComponents:{
     alignContent:'center',
     justifyContent:'center',
+    alignItems:'center',   
     minWidth:windowWidth*0.25,
     minHeight:windowHeight*0.06,    
+    overflow:'hidden'
   },
   title:{
     fontFamily:fonts.bold,
     fontSize:windowHeight*0.022,
-    color:colorPalet.darkGrey,    
-    textAlign:'center'
+    color:colorPalet.darkGrey    
   },
   hours:{
     fontFamily:'AlegreyaSans-Bold',
@@ -257,5 +160,21 @@ const s = StyleSheet.create({
     fontFamily:fonts.bold,
     color:colorPalet.darkGrey,
     fontSize:windowHeight*0.022,    
-  }
+  },
+  addNewClientButton:{
+    width:'90%',
+    alignSelf:'center',
+    borderRadius:windowHeight*0.04,
+    height:windowHeight*0.04,
+    paddingHorizontal:windowWidth*0.05,    
+    backgroundColor:colorPalet.green,    
+    justifyContent:'center',
+    alignItems:'center',
+    marginBottom:4
+  },
+  addNewClientText:{
+    fontFamily:fonts.bold,
+    color:colorPalet.white,
+    fontSize:windowHeight*0.022,    
+  },
 })
