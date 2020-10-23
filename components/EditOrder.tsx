@@ -5,16 +5,21 @@ import {colorPalet,fonts,order,dateStringFromDate} from '../util/util';
 import CleanHeader from './AuxComponents/CleanHeader';
 import {ordersGetRequest} from '../util/requests';
 import NavigationRow from './AuxComponents/NavigationRow';
+import { Route,NavigationProp } from '@react-navigation/native';
+import { StackNavigationProp } from '@react-navigation/stack';
 
-export default function EditOrder({route,navigation}): JSX.Element{
-  const {params} = route;
+
+
+export default function EditOrder({route,navigation}:{route:Route<'editOrder'>,navigation:any}): JSX.Element{
+  const params = (route.params as {order:order});  
   const [orders,setOrders]    = React.useState([]);
   const [order,setOrder]      = React.useState(undefined);
   const [loading,setLoading]  = React.useState(false);
 
   async function teste(){
     try{
-      const tempOrders : any = await ordersGetRequest({orderId:params.order._id});      
+      
+      const tempOrders : any = await ordersGetRequest({orderId:params?.order?._id});      
       if(tempOrders.length !== 1){
         throw new Error('Zero or multiple orders for the provided ID');
       }else{
@@ -43,7 +48,13 @@ export default function EditOrder({route,navigation}): JSX.Element{
       if(props.order.clientData){
         clientData = {
           name:`${props.order.clientData.name}`,
-          address:`${props.order.clientData.address.addressType} ${props.order.clientData.address.street},${props.order.clientData.address.number} - ${props.order.clientData.address.district},${props.order.clientData.address.estate}`
+          address: `No address was found.`
+        }        
+        if( props.order.clientData?.address){
+          const temp = props.order.clientData.address
+          if(temp?.addressType && temp?.district && temp?.estate && temp?.street && temp?.town){
+            clientData.address = `${temp.addressType} ${temp.street},${temp.number ? temp.number : 'SN'} - ${temp.district},${temp.estate}`;
+          }          
         }
       }
       return (
@@ -84,7 +95,7 @@ export default function EditOrder({route,navigation}): JSX.Element{
     <SafeAreaView style={s.safeArea}>
       <CleanHeader />
       <NavigationRow ohNoPress={()=>navigation.goBack()} goGoPress={()=>navigation.navigate('home')} loading={loading}/>
-      <ConditionalCard order={order as order}/>
+      <ConditionalCard order={(order as unknown) as order}/>
     </SafeAreaView>
   )
 }

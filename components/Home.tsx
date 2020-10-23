@@ -32,28 +32,19 @@ export default function Home(props:any){
       console.log(e);
     }
   }
-  async function onDatePress(newDate:Date) : Promise<void>{
-    const tempNewDate = newDate;
-    const options = {
-      method:'GET',
-      headers: {
-        Accept: 'application/json',
-        'Content-Type': 'application/json'
-      }
-    }
-    const firstDay  = tempNewDate;
-    const lastDay   = tempNewDate;
-    const params = `?minDueDate=${firstDay.toISOString()}&maxDueDate=${lastDay.toISOString()}`;
+  async function onDatePress(newDate:Date) : Promise<void>{    
+    const minDate = new Date(newDate.getFullYear(),newDate.getMonth(),newDate.getDate(),0);
+    const maxDate = new Date(newDate.getFullYear(),newDate.getMonth(),newDate.getDate(),23,59,59,999);        
     try{
-      const response = await (await fetch(`http://192.168.15.50:3000/order${params}`,options)).json();      
+      const response = await ordersGetRequest({minDueDate:minDate,maxDueDate:maxDate});       
       response.forEach((el:any)=>{
         el.creationDate = new Date(el.creationDate);
         el.dueDate      = new Date(el.dueDate);
       }); 
-      setActiveDate({date:tempNewDate,orders:response}) 
+      setActiveDate({date:newDate,orders:response}) 
     }catch(e){
       console.log(e)
-      setActiveDate({date:tempNewDate,orders:[]}) 
+      setActiveDate({date:newDate,orders:[]}) 
     }
   }
   type changeMonth = (increment:number) => Promise<void>
@@ -98,7 +89,7 @@ export default function Home(props:any){
         </View>
         <VirtualizedList           
           style={s.listSize}
-          data={activeDate.orders.sort((el,el2)=>{ return el.dueDate.getHours()>el2.dueDate.getHours() ? 1 : -1 })}
+          data={activeDate.orders.sort((el:order,el2:order)=>{ return el.dueDate.getHours()>el2.dueDate.getHours() ? 1 : -1 })}
           initialNumToRender={4}
           getItem={(data,index)=>data[index]}
           getItemCount={(data)=>data.length}        

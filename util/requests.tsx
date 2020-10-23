@@ -8,7 +8,7 @@ interface orderQuery{
   minDueDate:Date,
   maxDueDate:Date,
   orderNumber:number,
-  orderId:number
+  orderId:string
 }
 interface order{
   creationDate? :Date,
@@ -64,6 +64,19 @@ export async function ordersPostRequest(order:order){
     const {data} = await worker.post('/order',{order});    
     return data 
 	}catch(e){
+		throw(e);
+	}
+}
+export async function ordersPatchRequest(order:order){
+	try{
+		const worker = axios.create({
+			baseURL:endPoint,
+			headers:globalHeader,
+			timeout:1000			
+    });    
+    const {data} = await worker.patch('/order',{order});    
+    return data 
+	}catch(e){    
 		throw(e);
 	}
 }

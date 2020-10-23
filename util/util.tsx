@@ -1,4 +1,9 @@
-
+type productClass       = 'product'|'accessory';
+type productSubClass    = 'kokedama'|'plant vase'|'succulents vase'|'accessory'|'plant'|'consulting'|'miniatures'|'holder'|'tripod'|'dish'|'basic'|'fertilizer'|'vase'|'cachepot';
+type productOptions     = {
+  name:string,
+  options:string[]
+}
 
 export interface order {
   _id: string,
@@ -35,16 +40,19 @@ export interface order {
     name: string,
     __v: number,
     purpose: 'maintenance'|'sale'|'shopping'
-  } 
+  },
+  purpose: 'maintenance'|'sale'|'shopping'
 }
 export interface product{
   _id: string,
   active: boolean,
-  class: string,
+  productId: number,
   name: string,
   value: number,
-  productId: number,
-  components: product[]
+  class: productClass,
+  subClass: productSubClass,
+  options:productOptions[]  
+  components: string[]
 }
 export interface customDateObj{  
   month:[string,number],
@@ -123,7 +131,16 @@ export const fonts={
   regular:'AlegreyaSans-Regular',
   bold:'AlegreyaSans-Bold'
 }
-export const endpoint = 'http://192.168.15.50:3000'
+export const endpoint = 'http://192.168.15.50:3000';
+export function fontStyle(windowHeight:number){
+  return {
+    title:{
+      fontFamily:fonts.bold,
+      fontSize:windowHeight*0.022,
+      color:colorPalet.darkGrey    
+    },
+  }
+}
 export function dateStringFromDate(date:Date) : customDateObj {
   const months  = ["January","February","March","April","May","June","July","August","September","October","November","December"];
   const weekDay = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
@@ -131,8 +148,8 @@ export function dateStringFromDate(date:Date) : customDateObj {
     month:    [months[date.getMonth()],date.getMonth()+1],
     weekDay:  [weekDay[date.getDay()] ,date.getDay()],
     day:      `${date.getDate()}`,
-    year:     `${date.getFullYear()}`,
-    hour:     date.getHours()   < 12 ? `0${date.getHours()}`      : `${date.getHours()}`,
+    year:     `${date.getFullYear()}`,    
+    hour:     date.getHours()   < 10 ? `0${date.getHours()}`    : `${date.getHours()}`,
     minute:   date.getMinutes() < 10 ? `0${date.getMinutes()}`  : `${date.getMinutes()}`,
   }
   return dtObj

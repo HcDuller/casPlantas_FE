@@ -1,5 +1,7 @@
 import React from 'react';
-import {View,Text,Image,StyleSheet,Dimensions,TouchableOpacity,Animated,FlatList,TextInput} from 'react-native';
+import {View,Text,Image,StyleSheet,Dimensions,TouchableOpacity,Animated,FlatList,TextInput, ListRenderItem} from 'react-native';
+import { TouchableHighlight } from 'react-native-gesture-handler';
+import { color } from 'react-native-reanimated';
 import {colorPalet,client,fonts} from '../util/util';
 
 const windowHeight  = Dimensions.get('window').height;
@@ -10,6 +12,11 @@ type newClientItem = {
   onPress:()=>void,
   newClient:boolean  
 }
+type TextInputNativeEvent = {
+  eventCount:number,
+  target:number,
+  text:string
+}
 const AnimatedFlatList = Animated.createAnimatedComponent(FlatList);
 const icons = {
   search: require('../assets/icons/Search.png'),
@@ -18,13 +25,12 @@ const icons = {
 export function ClientList(props:{clientList: client[] | [] | newClientItem[],onSelect:(clientId:string)=>void}) {
   
   const [open,setOpen] = React.useState(false);
-  const [list,setList]  = React.useState([]);
-  const [placeholder,setPlaceHolder] = React.useState('Select a client');
-  
-  const inputRef = React.useRef(null);
+  const [list,setList]  = React.useState([]);  
+  const [clientName,setClientName]  = React.useState('');
 
-  const stretchAnim = React.useRef(new Animated.Value(0)).current;
-  const horizontalTranslate = React.useRef(new Animated.Value(0)).current;
+  const inputRef = React.useRef<TextInput>(null);
+
+  const stretchAnim = React.useRef(new Animated.Value(0)).current;  
   const stretcher = () => {
     if(open){            
       animate(0);                  
@@ -32,34 +38,37 @@ export function ClientList(props:{clientList: client[] | [] | newClientItem[],on
       animate(150);                  
     }
     setOpen(!open);
-  } 
-  const animate = (size:number,time:number = 1000) => {    
-    //Animated.timing(stretchAnim, {
-    //  useNativeDriver: false,
-    //  toValue: size,
-    //  duration: time,
-    //}).start();
+  }   
+  const animate = (size:number,time:number = 1000) => {        
     const stretcherAnim = Animated.timing(stretchAnim, {
       useNativeDriver: false,
       toValue: size,
       duration: time,
-    });
-    const translater = Animated.timing(horizontalTranslate,{
-      useNativeDriver:true,
-      toValue:size === 0 ? 0 : windowWidth,
-      duration:time
-    });
-    stretcherAnim.start();
-    //Animated.parallel([stretcherAnim,translater]).start();    
+    });    
+    stretcherAnim.start();    
   };  
-  function fListItem({item}){        
+  function fListItem({item}:{item:client}) {        
     return (
-      <TouchableOpacity>
+      <TouchableOpacity         
+        style={{borderRadius:10}}
+        onPress={()=>{selecClient(item.name,item._id)}}        
+      >
         <View style={s.flatListItem}>
           <Text style={s.flatListText}>{`${item.name}`}</Text>
         </View>
       </TouchableOpacity>
     )
+    /*
+    <TouchableHighlight 
+        underlayColor={colorPalet.green} 
+        style={{borderRadius:10}}
+        onPress={()=>{selecClient(item.name,item._id)}}        
+      >
+        <View style={s.flatListItem}>
+          <Text style={s.flatListText}>{`${item.name}`}</Text>
+        </View>
+      </TouchableHighlight>
+    */
   }
   function AddNewClient(props:any): JSX.Element{
     return (
@@ -70,24 +79,61 @@ export function ClientList(props:{clientList: client[] | [] | newClientItem[],on
       </TouchableOpacity>
     )
   }
+  function cancelSearch(){
+    inputRef.current?.clear();
+    setClientName('');
+    stretcher();
+    inputRef.current?.blur();
+  }
+  
+  function searchChange({nativeEvent}:{nativeEvent:TextInputNativeEvent}){    
+    const {text} = nativeEvent;
+    setClientName(text)    
+  }
+  function selecClient(newName:string,clientId:string){    
+    setClientName(newName);
+    stretcher();
+    props.onSelect(clientId);        
+  }
+  function clientFilter(el:client,index:number,array:client[]) : boolean{
+    if(clientName === ''){
+      return true;
+    }else{    
+      return el.name.toLowerCase().includes(clientName.toLowerCase());
+    }
+  }
+  function findClientPress(){
+    setClientName('');
+    props.onSelect('');
+    stretcher();
+  }
   return (
     <View style={s.centralContainer}>      
       <View style={s.centralContainerComponents}>                    
-          <View style={[s.centralContainerComponents,{flexDirection:'row'}]}>
+          <View style={[s.centralContainerComponents,{flexDirection:'row',width:'100%'}]}>
             <TextInput 
               ref={inputRef} 
-              placeholder='Select a Client' 
-              style={[s.title,{width:windowWidth*0.66,textAlign:'left',paddingRight:10}]} 
-              onFocus={()=>{stretcher()}}
-              onBlur={()=>{stretcher()}}
+              placeholder='Select a Client'
+              onChange={searchChange}
+              value={clientName}              
+              style={[s.title,{textAlign:'center'}]}
+              onFocus={()=>{open ? undefined : findClientPress()}}              
               />
 
-              <TouchableOpacity onPress={()=>{inputRef.current?.isFocused() ? inputRef.current.blur() : inputRef.current.focus()}}>
+              <TouchableOpacity 
+                onPress={()=>{inputRef.current?.isFocused() ? cancelSearch() : inputRef.current?.focus()}}
+                style={{
+                  zIndex:1,
+                  position:'absolute',
+                  left:windowWidth*0.7
+                }}
+                >
                 <Image source={inputRef.current?.isFocused() ? icons.delete : icons.search} 
                   style={
-                    {height:windowHeight*0.03,
-                    width:windowHeight*0.03,
-                    tintColor: (inputRef.current?.isFocused() ? colorPalet.red : colorPalet.green)
+                    {                      
+                      height:windowHeight*0.03,
+                      width:windowHeight*0.03,                    
+                      tintColor: (inputRef.current?.isFocused() ? colorPalet.red : colorPalet.green)
                     }
                   }
                 />                
@@ -96,12 +142,12 @@ export function ClientList(props:{clientList: client[] | [] | newClientItem[],on
         {props.clientList.length===0? undefined : (
         <View>          
           <AnimatedFlatList
-            data={props.clientList}
+            data={props.clientList.filter(clientFilter)}
             ListHeaderComponent={AddNewClient}
             style={{maxHeight:stretchAnim,width:windowWidth*0.8}}                
             refreshing={list.length===0}
-            keyExtractor={item=>item._id}
-            renderItem={fListItem}                
+            keyExtractor={(item:unknown)=>(item as client)._id}
+            renderItem={fListItem}
           />
         </View>)}
         

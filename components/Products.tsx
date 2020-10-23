@@ -42,7 +42,7 @@ export default function Products(props:any) : JSX.Element{
         <View style={{height:(logoDimentions*0.5+10),backgroundColor:colorPalet.white,width:width,flexDirection:'row',justifyContent:'flex-end'}}>
           <TouchableOpacity 
             style={{justifyContent:'center',height:(logoDimentions*0.5+10),width:(width*0.1)}} 
-            onPress={()=>console.log('newProd')}>
+            onPress={()=>props.navigation.navigate('prodEdit')}>
             <AntDesign name="pluscircle" size={logoDimentions*0.4} color={colorPalet.darkGreen} />
           </TouchableOpacity>
         </View>

@@ -7,11 +7,12 @@ import { NavigationContainer } from '@react-navigation/native';
 import { createStackNavigator,CardStyleInterpolators,StackNavigationOptions } from '@react-navigation/stack';
 
 const Stack = createStackNavigator();
-//import Home from './components/Home';
-import HomeNavigation from './components/HomeNavigation';
-import NewOrder   from  './components/NewOrder';
-import EditOrder  from  './components/EditOrder'
 
+
+import HomeNavigation   from './components/HomeNavigation';
+import NewOrder         from  './components/NewOrder';
+import EditOrder        from  './components/EditOrder';
+import NewEditProduct   from './components/NewEditProduct';
 
 
 const Tab = createBottomTabNavigator();
@@ -48,7 +49,11 @@ export default function App() {
           <Tab.Screen 
             name='editOrder'
             component={EditOrder}
-          />                 
+          />  
+          <Tab.Screen 
+            name='prodEdit'
+            component={NewEditProduct}
+          />               
         </Stack.Navigator>                                
       </NavigationContainer>
     )

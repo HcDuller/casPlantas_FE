@@ -2,14 +2,13 @@ import React from 'react';
 import {View,Text,Platform,StyleSheet,Dimensions,TouchableOpacity,VirtualizedList,Image,TextInput} from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import DateTimePicker, { Event } from '@react-native-community/datetimepicker';
-import {colorPalet,client, isClient} from '../util/util';
+import {colorPalet,client,order} from '../util/util';
 import {ClientList} from './ClientList';
 import OrderCard from './AuxComponents/OrderCard';
 import CleanHeader from './AuxComponents/CleanHeader';
-import {ordersGetRequest,ordersPostRequest,getClients} from '../util/requests'
-import ProgressBar from './AuxComponents/ProgressBar'
+import {ordersGetRequest,ordersPostRequest,getClients,ordersPatchRequest} from '../util/requests'
 import NavigationRow  from './AuxComponents/NavigationRow';
-import { TouchableHighlight } from 'react-native-gesture-handler';
+
 
 const monthNames = ["January", "February", "March", "April", "May", "June","July", "August", "September", "October", "November", "December"];
 const dummyData = [
@@ -161,6 +160,11 @@ const dummyData = [
     "__v": 0
   }
 ]
+const orderPurpose : {value:'maintenance'|'sale'|'shopping',text:string}[] = [
+  {value:'maintenance',text:'Maintenance'},
+  {value:'sale',text:'Sale'},
+  {value:'shopping',text:'Shopping'}
+];
 const logoHeight = Dimensions.get('window').height*0.1;
 type dateObj = {
   day: string,
@@ -199,16 +203,20 @@ async function getOrders(activeDate:Date){
   }
 }
 export default function NewOrder(props:any){
+  
   type tMode = "date" | "time" | "datetime" | "countdown" | undefined ;
+  const {params} = props.route;
 
-  const [date, setDate]             = React.useState(new Date());
+  const [date, setDate]             = React.useState(params?.date ? params.date : new Date(Math.floor(Date.now()/1800000)*1800000));
   const [dateObj,setDateObj]        = React.useState(toDateObj(date));
   const [mode, setMode]             = React.useState('date'as tMode);
   const [orders,setOrders]          = React.useState([]);
   const [show, setShow]             = React.useState(false);
   const [loading,setLoading]        = React.useState(false);
-  const [clientName,setClientName]  = React.useState('');  
+  const [clientId,setClientId]      = React.useState(params?.order ? params.order.clientId : '');  
+  const [purpose,setPurpose]        = React.useState(params?.order ? params.order.purpose : 0);
   const [clientList,setClientList]  = React.useState<client[] | []>([]);
+  const [order,setOrder]            = React.useState(params?.order ? params.order : null);
 
   const onChange = (event:Event, selectedDate:Date|undefined):void => {
     const currentDate = selectedDate || date;
@@ -239,10 +247,21 @@ export default function NewOrder(props:any){
   
   async function saveAndGo(){
     try{
-      setLoading(true);      
-      const response = await ordersPostRequest({dueDate:date});            
+      setLoading(true); 
+      const params : Partial<order> ={        
+        dueDate:date,        
+        purpose:orderPurpose[purpose].value
+      }     
+      if(clientId){
+        params.clientId = clientId
+      }                  
+      if(order){
+        params._id = order._id
+      }
+      const response = order ? await ordersPatchRequest(params)  : await ordersPostRequest(params);          
       await simpleDelay(2000);
       setLoading(false);
+      setOrder(response);
       props.navigation.navigate('editOrder',{order:response});
     }catch(e){
       console.log(e)
@@ -269,7 +288,15 @@ export default function NewOrder(props:any){
       </View>
     )
   }
-  
+  function purposeCycle(increment:number):void{
+    let temp = purpose + increment;
+    if(temp < 0){
+      temp = 2;
+    }else if(temp > 2){
+      temp = 0
+    }
+    setPurpose(temp);
+  }
   return (
     <SafeAreaView style={s.container}>            
       <CleanHeader logoHeight={logoHeight}/>                      
@@ -283,7 +310,8 @@ export default function NewOrder(props:any){
           display="default"
           onChange={onChange}
         />
-      ) : undefined}            
+      ) : undefined}        
+      <ClientList clientList={clientList} onSelect={(a:string)=>{setClientId(a)}} />    
       <View style={s.centralContainer}>
         <TouchableOpacity style={s.centralContainerComponents} onPress={()=>{setDate(new Date(date.valueOf()-86400000))}}>
           <Image source={images.leftArrow} style={s.centralContainerIcons}/>
@@ -300,18 +328,23 @@ export default function NewOrder(props:any){
           <Image source={images.leftArrow} style={s.centralContainerIcons}/>
         </TouchableOpacity>
         <TouchableOpacity style={s.centralContainerComponents} onPress={showTimepicker}>
-          <Text style={s.title}>{`${dateObj.twelveHour}  :  ${dateObj.minute}  ${dateObj.period}`}</Text>
+          <Text style={s.title}>{`${dateObj.hour}  :  ${dateObj.minute}  `}</Text>
         </TouchableOpacity>  
         <TouchableOpacity style={s.centralContainerComponents} onPress={()=>{setDate(new Date(date.valueOf()+1800000))}}>
           <Image source={images.rightArrow} style={s.centralContainerIcons} />
         </TouchableOpacity>
-      </View>
-      <ClientList clientList={clientList} onSelect={(a:string)=>{}} />
+      </View>      
       {orders.length>0? listComponent() : (<View style={[s.centralContainer,{justifyContent:'center'}]}><View style={s.centralContainerComponents}><Text style={s.title}>All day is available</Text></View></View>)}                                   
       <View style={s.centralContainer}>
-        <View style={[s.centralContainerComponents]}>          
-          <Text style={s.title}>Implementation pending</Text>
+      <TouchableOpacity style={s.centralContainerComponents} onPress={()=>{purposeCycle(-1)}}>
+          <Image source={images.leftArrow} style={s.centralContainerIcons}/>
+        </TouchableOpacity>
+        <View style={s.centralContainerComponents} >
+          <Text style={s.title}>{orderPurpose[purpose].text}</Text>
         </View>
+        <TouchableOpacity style={s.centralContainerComponents} onPress={()=>{purposeCycle(1)}}>
+          <Image source={images.rightArrow} style={s.centralContainerIcons} />
+        </TouchableOpacity>
       </View>      
     </SafeAreaView>
   );
