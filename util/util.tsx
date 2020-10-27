@@ -1,4 +1,4 @@
-type productClass       = 'product'|'accessory';
+type productClass       = 'product'|'accessory'|'service';
 type productSubClass    = 'kokedama'|'plant vase'|'succulents vase'|'accessory'|'plant'|'consulting'|'miniatures'|'holder'|'tripod'|'dish'|'basic'|'fertilizer'|'vase'|'cachepot';
 type productOptions     = {
   name:string,
