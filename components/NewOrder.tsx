@@ -313,6 +313,17 @@ export default function NewOrder(props:any){
       ) : undefined}        
       <ClientList clientList={clientList} onSelect={(a:string)=>{setClientId(a)}} />    
       <View style={s.centralContainer}>
+        <TouchableOpacity style={s.centralContainerComponents} onPress={()=>{purposeCycle(-1)}}>
+          <Image source={images.leftArrow} style={s.centralContainerIcons}/>
+        </TouchableOpacity>
+        <View style={s.centralContainerComponents} >
+          <Text style={s.title}>{orderPurpose[purpose].text}</Text>
+        </View>
+        <TouchableOpacity style={s.centralContainerComponents} onPress={()=>{purposeCycle(1)}}>
+          <Image source={images.rightArrow} style={s.centralContainerIcons} />
+        </TouchableOpacity>
+      </View>      
+      <View style={s.centralContainer}>
         <TouchableOpacity style={s.centralContainerComponents} onPress={()=>{setDate(new Date(date.valueOf()-86400000))}}>
           <Image source={images.leftArrow} style={s.centralContainerIcons}/>
         </TouchableOpacity>
@@ -334,18 +345,7 @@ export default function NewOrder(props:any){
           <Image source={images.rightArrow} style={s.centralContainerIcons} />
         </TouchableOpacity>
       </View>      
-      {orders.length>0? listComponent() : (<View style={[s.centralContainer,{justifyContent:'center'}]}><View style={s.centralContainerComponents}><Text style={s.title}>All day is available</Text></View></View>)}                                   
-      <View style={s.centralContainer}>
-      <TouchableOpacity style={s.centralContainerComponents} onPress={()=>{purposeCycle(-1)}}>
-          <Image source={images.leftArrow} style={s.centralContainerIcons}/>
-        </TouchableOpacity>
-        <View style={s.centralContainerComponents} >
-          <Text style={s.title}>{orderPurpose[purpose].text}</Text>
-        </View>
-        <TouchableOpacity style={s.centralContainerComponents} onPress={()=>{purposeCycle(1)}}>
-          <Image source={images.rightArrow} style={s.centralContainerIcons} />
-        </TouchableOpacity>
-      </View>      
+      {orders.length>0? listComponent() : (<View style={[s.centralContainer,{justifyContent:'center'}]}><View style={s.centralContainerComponents}><Text style={s.title}>All day is available</Text></View></View>)}      
     </SafeAreaView>
   );
 }

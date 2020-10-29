@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { ReactComponentElement } from 'react';
 import {View,Text,Image,StyleSheet,Dimensions,TouchableOpacity,Animated,FlatList,TextInput, ListRenderItem} from 'react-native';
 import { TouchableHighlight } from 'react-native-gesture-handler';
 import { color } from 'react-native-reanimated';
@@ -22,7 +22,11 @@ const icons = {
   search: require('../assets/icons/Search.png'),
   delete: require('../assets/icons/Delete.png'),
 }
-export function ClientList(props:{clientList: client[] | [] | newClientItem[],onSelect:(clientId:string)=>void}) {
+interface ClientListProps extends React.ComponentPropsWithRef<"view">{
+  clientList: client [] | client;
+  customSelect:(clientId:string)=>void
+}
+export function ClientList(props:ClientListProps) {
   
   const [open,setOpen] = React.useState(false);
   const [list,setList]  = React.useState([]);  
@@ -93,7 +97,7 @@ export function ClientList(props:{clientList: client[] | [] | newClientItem[],on
   function selecClient(newName:string,clientId:string){    
     setClientName(newName);
     stretcher();
-    props.onSelect(clientId);        
+    props.customSelect(clientId);        
   }
   function clientFilter(el:client,index:number,array:client[]) : boolean{
     if(clientName === ''){
@@ -104,7 +108,7 @@ export function ClientList(props:{clientList: client[] | [] | newClientItem[],on
   }
   function findClientPress(){
     setClientName('');
-    props.onSelect('');
+    props.customSelect('');
     stretcher();
   }
   return (
@@ -133,7 +137,7 @@ export function ClientList(props:{clientList: client[] | [] | newClientItem[],on
                     {                      
                       height:windowHeight*0.03,
                       width:windowHeight*0.03,                    
-                      tintColor: (inputRef.current?.isFocused() ? colorPalet.red : colorPalet.green)
+                      tintColor: (inputRef.current?.isFocused() ? colorPalet.grey : colorPalet.green)
                     }
                   }
                 />                
