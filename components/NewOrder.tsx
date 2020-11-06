@@ -311,7 +311,7 @@ export default function NewOrder(props:any){
           onChange={onChange}
         />
       ) : undefined}        
-      <ClientList clientList={clientList} onSelect={(a:string)=>{setClientId(a)}} />    
+      <ClientList clientList={clientList} customSelect={(a:string)=>{setClientId(a)}} />    
       <View style={s.centralContainer}>
         <TouchableOpacity style={s.centralContainerComponents} onPress={()=>{purposeCycle(-1)}}>
           <Image source={images.leftArrow} style={s.centralContainerIcons}/>

@@ -24,7 +24,7 @@ export default function Home(props:any){
   
   async function getOrders(activeDate:Date){    
     try{                 
-      const minDate = new Date(activeDate.getFullYear(),activeDate.getMonth(),-7);
+      const minDate = new Date(activeDate.getFullYear(),activeDate.getMonth()-1,0);
       const maxDate = new Date(activeDate.getFullYear(),activeDate.getMonth()+1,8);
       const response = await ordersGetRequest({minDueDate:minDate,maxDueDate:maxDate});       
       return response; 

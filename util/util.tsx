@@ -1,8 +1,14 @@
 type productClass       = 'product'|'accessory'|'service';
 type productSubClass    = 'kokedama'|'plant vase'|'succulents vase'|'accessory'|'plant'|'consulting'|'miniatures'|'holder'|'tripod'|'dish'|'basic'|'fertilizer'|'vase'|'cachepot';
+
 export type productOptions     = {
   name:string,
-  options:string[]
+  active:boolean,
+  options:{
+    _id?:string,  
+    name:string,
+    active:boolean,      
+  }[]
 }
 
 export interface order {
@@ -92,11 +98,14 @@ export function calendarArray(date:Date,events?: order[]) : calendar{
   const days = [];  
   const fator = (firstDay.getDay()*-1 +1);
   
-  for(let i = fator; i < 41 ;i++){
-    const tempDate = new Date(firstDay.getFullYear(),date.getMonth(),i);
+  for(let i = fator; i < 41 ;i++){    
+    const tempDate = new Date(firstDay.getFullYear(),date.getMonth(),i);    
     const tempEvents = events ? events : [];
     const tempOrders = tempEvents?.filter((el:order) => {      
-      return el.dueDate.getFullYear()  === tempDate.getFullYear() && el.dueDate.getMonth() === tempDate.getMonth() && el.dueDate.getDate()  === tempDate.getDate();
+      const year    = el.dueDate.getFullYear()  === tempDate.getFullYear();
+      const month   = el.dueDate.getMonth()     === tempDate.getMonth();
+      const day     = el.dueDate.getDate()      === tempDate.getDate();
+      return  year && month && day;
     })    
     const temp ={
       date: tempDate,
@@ -126,6 +135,17 @@ export const colorPalet= {
   darkGrey:   '#5b5a5d',  
   darkGreen : '#8eb878',
   darkOrange: '#f8e0cc',  
+}
+export const rgbColorPallet = {
+  purple:     'rgb(123,116,173)',
+  white:      'rgb(255,255,255)',
+  red:        'rgb(175,19,45)',
+  green:      'rgb(199,218,176)',  
+  grey:       'rgb(237,238,240)',
+  orange:     'rgb(222,159,0)',  
+  darkGrey:   'rgb(91,90,93)',  
+  darkGreen : 'rgb(142,184,120)',
+  darkOrange: 'rgb(248,224,204)',
 }
 export const fonts={
   regular:'AlegreyaSans-Regular',

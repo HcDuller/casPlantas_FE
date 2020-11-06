@@ -46,23 +46,45 @@ type navProp = {
   type: string;
   stale: false;
 }
-
-
 export default function NewEditProduct(props: {
   navigation: NavigationProp<Record<string, object | undefined>, string, Readonly<navProp>, {}, {}>,
   route: any
 }): JSX.Element {
-  const tempoProd: Partial<product> & selectdProdProps = {
+  const tempProd: Partial<product> & selectdProdProps = {
     name: 'Nome Padrao',
     value: 0,
     class: 'product',
     subClass: 'basic',
     selectedClass: 0,    // base value must be assigned programmatically based on props.route.param.product.class,     when available
     selectedSubClass: 2, // base value must be assigned programmatically based on props.route.param.product.subClass,  when available
-    options: [{ name: 'Tamanho', options: ['P', 'M', 'G'] }, { name: 'Tamanho', options: ['PP', 'M', 'GG'] }, { name: 'Tamanho', options: ['XP', 'M', 'XG'] }, { name: 'Tamanho', options: ['P', 'M', 'G'] }, { name: 'Tamanho', options: ['PP', 'M', 'GG'] }, { name: 'Tamanho', options: ['XP', 'M', 'XG'] }, { name: 'Tamanho', options: ['P', 'M', 'G'] }, { name: 'Tamanho', options: ['PP', 'M', 'GG'] }, { name: 'Tamanho', options: ['XP', 'M', 'XG'] }, { name: 'Tamanho', options: ['P', 'M', 'G'] }, { name: 'Tamanho', options: ['PP', 'M', 'GG'] }, { name: 'Tamanho', options: ['XP', 'M', 'XG'] }],
+    options: [
+      {
+        name:'tamanho',
+        active:true,
+        options:[
+          {
+            name:'P',
+            active:true            
+          },
+          {
+            name:'M',
+            active:true            
+          },
+          {
+            name:'G',
+            active:true            
+          },
+          {
+            name:'GG',
+            active:true            
+          }
+        ]
+      }
+    ],
     components: [],
   }
-  const [product, setProduct] = React.useState<Partial<product> & selectdProdProps>(tempoProd);
+  const [product, setProduct] = React.useState<Partial<product> & selectdProdProps>(tempProd);
+  const [prodOpt,setProdOpt]  = React.useState<productOptions | undefined>(undefined);
   const [modalStatus, setModalStatus] = React.useState(false);
   const nameRef = React.useRef<TextInput>(null);
   
@@ -71,7 +93,6 @@ export default function NewEditProduct(props: {
     setModalStatus(false) ;    
     return true;
   }
-
   function cicleType(increment: number) {
     const maxIndex = productClassOptd.length - 1;
     const newIndex = product.selectedClass + increment;
@@ -198,33 +219,51 @@ export default function NewEditProduct(props: {
       />
     )
   }
-  function modalOptions(){    
-    if(!modalStatus){
-      BackHandler.addEventListener('hardwareBackPress',pseudoModalController)
-      setModalStatus(true)      
+  function optionActivator(index:number,newActiveState:boolean){
+    const tempProd = {...product};    
+    if(tempProd.options){
+      tempProd.options[index].active = newActiveState
     }
+    setProduct(tempProd);
   }
+  function newOptionHandler(newOption:productOptions):void{
+    const tempOpt = product;
+    if(tempOpt.options){
+      tempOpt.options.push(newOption);
+    }
+    setModalStatus(false);
+    setProduct(tempOpt);
+  }
+  function modalOptionsHandler(option?:productOptions){    
+    if(!modalStatus){
+      BackHandler.addEventListener('hardwareBackPress',pseudoModalController);      
+      setModalStatus(true);
+      setProdOpt(option);
+    }
+  }  
   return (
-
     <SafeAreaView style={{ backgroundColor: colorPalet.grey, minHeight: '100%' }}>
-      <ModalOptions visible={modalStatus} />
+      <ModalOptions 
+        option={prodOpt}
+        visible={modalStatus} 
+        gogoAction={newOptionHandler}
+        goBack={()=>setModalStatus(false)}
+        key={prodOpt? `modal-edit-${prodOpt.name}` : 'newOptionModal'}
+      />
       <ScrollView>
         <CleanHeader />
         <NavigationRow ohNoPress={() => { props.navigation.goBack() }} goGoPress={() => { }} loading={false} />
-        <CentralCiclingContainer
-          title='Tipo'
+        <CentralCiclingContainer        
           onLeftPress={() => cicleType(-1)}
           onRightPress={() => cicleType(1)}
           content={productClassOptd[product.selectedClass][1]}
         />
-        <CentralCiclingContainer
-          title='Sub Tipo'
+        <CentralCiclingContainer          
           onLeftPress={() => cicleSubType(-1)}
           onRightPress={() => cicleSubType(1)}
           content={productSubClassOptd[product.selectedSubClass][1]}
         />
         <CentralCiclingContainer
-          title='Nome'
           contentDisposition='center'
           onCenterPress={() => nameRef.current?.focus()}
           content={<NameInput
@@ -233,25 +272,22 @@ export default function NewEditProduct(props: {
           />}
         />
         <CentralCiclingContainer
-          title='Valor'
           onLeftPress={() => valueIncrement(-1)}
           onRightPress={() => valueIncrement(1)}
           content={<ValueInput
             value={product.value}
             onChange={() => { }} />}
-        />
-
-        <CentralCiclingContainer
-          onCenterPress={() => modalOptions()}
-          content='Aperte aqui!'
-        />
+        />        
         <ProductOptions
           data={(product.options as productOptions[])}
-        />
+          onNewOrEdit={modalOptionsHandler}          
+          onActiveChange={optionActivator}          
+        />        
       </ScrollView>
     </SafeAreaView>
   )
 }
+
 //product.value?.toString()
 const fontStyleObj = fontStyle(width);
 

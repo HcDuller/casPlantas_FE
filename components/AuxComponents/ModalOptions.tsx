@@ -1,77 +1,239 @@
 import React from 'react';
-import {colorPalet, fonts} from '../../util/util'
-import {View,Dimensions,StyleSheet,TextInput,Text,Image,Switch} from 'react-native';
+import {colorPalet, fonts,productOptions} from '../../util/util'
+import {View,Dimensions,StyleSheet,TextInput,Text,Image,Switch,Pressable,Animated,Easing} from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 
 
 interface ModalOptionsProps extends React.ComponentPropsWithoutRef<"view">{
   visible:boolean;  
-  navigation?:any
+  navigation?:any;
+  option?:productOptions;
+  gogoAction:(newOpt:productOptions)=>void;
+  goBack:()=>void
 }
-
+interface NaviLineProps extends React.ComponentPropsWithoutRef<"view">{
+  onGogo:()=>void;
+  newOpt:()=>void;
+  goBack:()=>void;
+}
+interface FeatureNameInput extends React.ComponentPropsWithoutRef<"input">{
+  name:string;
+  nameChanger:(name:string)=>void;
+}
+interface OptionFeatureContainerProps extends React.ComponentPropsWithoutRef<"view">{
+  nameChanger:(name:string)=>void;
+  activeChanger:(newActiveState:boolean)=>void;
+  onDelete:()=>void;
+  data?:{name:string,active:boolean}
+}
 export default function ModalOptions(props:ModalOptionsProps){
-  
   const insets = useSafeAreaInsets();//{ top: number, right: number, bottom: number, left: number }
- 
+  const newOption : productOptions = {
+    active:false,
+    name:'',
+    options:[]
+  }  
+  const [focusedOpt,setFocusedOpt] = React.useState<productOptions>(props.option ? props.option : newOption);
   
+  function changeName(newName:string):void{
+    const tempOptions   = {...focusedOpt};
+    tempOptions.name    = newName;
+    setFocusedOpt(tempOptions);
+  }
+  function optionNameChanger(name:string,index:number):void{    
+    const tempOpt = {...focusedOpt};
+    if(tempOpt.options){
+      tempOpt.options[index].name = name;
+    }    
+    setFocusedOpt(tempOpt);
+  }
+  function subOptionActiveChanger(activeState:boolean,index:number){
+    const tempOpt = {...focusedOpt};
+    if(tempOpt.options){
+      tempOpt.options[index].active = activeState;
+    }
+    setFocusedOpt(tempOpt);
+  }
+  function addNewOption(){
+    const tempOptions = {...focusedOpt};
+    tempOptions.options.push({
+      active:true,
+      name:''
+    })
+    setFocusedOpt(tempOptions)
+  }
+  function removeSubOption(index:number){
+    const temp = {...focusedOpt};
+    if(temp.options){      
+      temp.options.splice(index,1);      
+      setFocusedOpt(temp);
+    }
+  }
+  function onGogo(){
+    if(focusedOpt?.name && focusedOpt?.options.length > 0){
+      setFocusedOpt(newOption);    
+      props.gogoAction(focusedOpt);    
+    }else{
+      alert('Empty option cannot be created');
+    }    
+  }
+  function onOhNo(){
+    if(props.option){
+
+    }else{
+      
+    }
+  }
   if(!props.visible){
     return <></>
   }
+  
   return (    
     <View style={[s.screen,{paddingTop:(insets.top+height*0.15+10)}]}>
       <View style={[s.centralContainer]}>
-        <FeatureNameInput />
-        <FeatureOptionNameInput />
-        <FeatureOptionNameInput />
-        <FeatureOptionNameInput />
-        <FeatureOptionNameInput />
-        <FeatureOptionNameInput />
-        <NavLine />
+        <FeatureNameInput nameChanger={changeName} name={focusedOpt.name}/>
+        {focusedOpt.options.map((el,index)=><OptionFeatureContainer 
+                                                key={`father-${el.name}-${index}`}                                                
+                                                data={el}
+                                                activeChanger={(newState:boolean)=>subOptionActiveChanger(newState,index)} 
+                                                nameChanger={(name:string)=>optionNameChanger(name,index)}
+                                                onDelete={()=>removeSubOption(index)}
+                                                />)}
+        <NavLine goBack={props.goBack} newOpt={addNewOption} onGogo={onGogo}/>
       </View>
     </View>
   )
 }
 
-function FeatureNameInput(props:React.ComponentPropsWithoutRef<"input">){
+function FeatureNameInput(props:FeatureNameInput){  
+  const [name,setName]  = React.useState(props.name ? props.name : '')
+  function nameChanger(newName:string):void{
+    props.nameChanger(newName);
+    setName(newName);
+  }
+  const tiltBase  = React.useRef<Animated.Value>(new Animated.Value(0)).current;
+  const colorBase = React.useRef<Animated.Value>(new Animated.Value(0)).current;
+
+  const msToDelete    = 2000;
+  const tiltDuration  = 40;
+
+  const tiltLeft    = Animated.timing(tiltBase,{toValue:-1,duration:tiltDuration/2,useNativeDriver:false});
+  const tiltRight   = Animated.timing(tiltBase,{toValue:1,duration:tiltDuration/2,useNativeDriver:false});
+  const straighten  = Animated.timing(tiltBase,{toValue:0,duration:tiltDuration/4,useNativeDriver:false});
+  const shake       = Animated.loop(Animated.sequence([tiltRight,tiltLeft,tiltRight,straighten]),{iterations:-1});  
+
+  const holding     = Animated.timing(colorBase,{toValue:1,duration:msToDelete,easing:Easing.ease,useNativeDriver:false})
+
+  const degTilt     = tiltBase.interpolate({inputRange:[-1,1],outputRange:['-2deg','2deg']});
+  const finalColor  = colorBase.interpolate({inputRange:[0,1],outputRange:[colorPalet.white,colorPalet.red]});
+
   return  (
-    <TextInput 
-      placeholder='Nome da Característica'
-      style={[s.hairlinedContainer,s.featureNameInput]}      
-    />
+    <Animated.View style={[s.hairlinedContainer,{paddingLeft:20,justifyContent:'center',transform:[{rotate:degTilt}],backgroundColor:finalColor}]}>
+      <Pressable
+        delayLongPress={msToDelete}
+        onPressIn={()=>Animated.parallel([shake,holding]).start()}
+        onPressOut={()=>{shake.reset();holding.reset();straighten.start();}}
+        onLongPress={()=>alert('deleta')}        
+      >
+        <TextInput 
+          placeholder='Nome da Característica'
+          value={name}
+          style={[s.featureNameInput,{width:'70%'}]}   
+          onChange={({ nativeEvent: { text} })=>nameChanger(text)}  
+        />
+      </Pressable>
+    </Animated.View>
   )
 }
-function FeatureOptionNameInput(props:React.ComponentPropsWithoutRef<"view">){
-  const [enabled,setEnabled]  = React.useState(true);
+function OptionFeatureContainer(props:OptionFeatureContainerProps){
+  const [enabled,setEnabled]  = React.useState(props.data ? props.data.active : true);
+  const [name,setName]        = React.useState(props.data ? props.data.name   : '' );
+
+  const tiltBase  = React.useRef<Animated.Value>(new Animated.Value(0)).current;
+  const colorBase = React.useRef<Animated.Value>(new Animated.Value(0)).current;
+
+  const msToDelete    = 2000;
+  const tiltDuration  = 40;
+
+  const tiltLeft    = Animated.timing(tiltBase,{toValue:-1,duration:tiltDuration/2,useNativeDriver:false});
+  const tiltRight   = Animated.timing(tiltBase,{toValue:1,duration:tiltDuration/2,useNativeDriver:false});
+  const straighten  = Animated.timing(tiltBase,{toValue:0,duration:tiltDuration/4,useNativeDriver:false});
+  const shake       = Animated.loop(Animated.sequence([tiltRight,tiltLeft,tiltRight,straighten]),{iterations:-1});  
+
+  const holding     = Animated.timing(colorBase,{toValue:1,duration:msToDelete,easing:Easing.ease,useNativeDriver:false})
+
+  const degTilt     = tiltBase.interpolate({inputRange:[-1,1],outputRange:['-2deg','2deg']});
+  const finalColor  = colorBase.interpolate({inputRange:[0,1],outputRange:[colorPalet.white,colorPalet.red]});
+  
+  const timer = React.useRef<number>(0);
+  function nameChanger(name:string):void{
+    clearTimeout(timer.current);
+    setName(name);
+    timer.current = setTimeout(() => {
+        props.nameChanger(name);
+    }, 500);            
+  }
+  function enabledChanger(){
+    const temp = !enabled;
+    setEnabled(temp);
+    props.activeChanger(temp);
+  }
+  
   return  (
-    <View style={[s.hairlinedContainer,s.featureOptionNameContainer]}>
-      <Switch 
-        thumbColor={colorPalet.white}
-        trackColor={{true:colorPalet.darkGreen,false:colorPalet.grey}}
-        onValueChange={()=>setEnabled(!enabled)}
-        value={enabled}
-        style={{marginRight:10}}
-      />
-      <TextInput 
-        placeholder='Variante'
-      />
-    </View>
+    <Animated.View style={[s.hairlinedContainer,s.featureOptionNameContainer,{backgroundColor:finalColor,transform:[{rotate:degTilt}]}]}>
+      <Pressable
+        style={{
+          height:'100%',
+          width:'100%',
+          flexDirection:'row',
+          justifyContent:'flex-start',
+          alignItems:'center'}}
+          delayLongPress={msToDelete}
+          onPressIn={()=>{Animated.parallel([shake,holding]).start()}}
+          onPressOut={()=>{shake.reset();holding.reset();straighten.start();}}
+          onLongPress={props.onDelete}
+        >
+        <Switch 
+          thumbColor={colorPalet.white}
+          trackColor={{true:colorPalet.darkGreen,false:colorPalet.grey}}
+          onValueChange={enabledChanger}
+          value={enabled}
+          style={{marginRight:10}}
+        />
+        <TextInput 
+          placeholder='Variante'
+          value={name}          
+          onChange={({ nativeEvent: {text} })=>nameChanger(text)}  
+          style={{minWidth:'50%'}}
+        />
+        
+      </Pressable>
+    </Animated.View>
   )
 }
-function NavLine(props:React.ComponentPropsWithoutRef<"view">){
+function NavLine(props:NaviLineProps){
   return  (
     <View style={{flexDirection:'row',justifyContent:'space-between',marginVertical:height*0.01}}>
-      <View style={{flexDirection:'row'}}>
+      <Pressable 
+        style={{flexDirection:'row'}}
+        onPress={props.goBack}
+      >
         <Image source={images.leftArrow}  style={{height:iconSize,width:iconSize}}/>
         <Text style={s.navigationText}>OH NO</Text>
-      </View>
-      <View style={{flexDirection:'row'}}>
-        <Image source={images.plus}       style={{height:iconSize,width:iconSize}}/>
-      </View>
-      <View style={{flexDirection:'row'}}>
+      </Pressable>
+      <Pressable onPress={props.newOpt}>
+        <View style={{flexDirection:'row'}}>
+          <Image source={images.plus}       style={{height:iconSize,width:iconSize}}/>
+        </View>
+      </Pressable>
+      <Pressable 
+        style={{flexDirection:'row'}}
+        onPress={props.onGogo}
+      >
         <Text style={[s.navigationText,{color:colorPalet.darkGreen}]}>GO GO</Text>
         <Image source={images.rightArrow} style={{height:iconSize,width:iconSize,tintColor:colorPalet.darkGreen}}/>
-      </View>      
+      </Pressable>      
     </View>
   )
 }
@@ -111,7 +273,8 @@ const s = StyleSheet.create({
   },
   featureNameInput:{        
     fontFamily:fonts.regular,
-    fontSize:height*0.022
+    fontSize:height*0.022,
+    minWidth:'50%'
   },
   featureOptionNameContainer:{
     marginLeft:width*0.1,
