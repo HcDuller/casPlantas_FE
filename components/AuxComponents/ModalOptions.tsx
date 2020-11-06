@@ -8,7 +8,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 interface ModalOptionsProps extends React.ComponentPropsWithoutRef<"view">{
   visible:boolean;  
   navigation?:any;
-  option?:productOptions;
+  option?:productOptions;  
   gogoAction:(newOpt:productOptions)=>void;
   goBack:()=>void
 }
@@ -16,6 +16,7 @@ interface NaviLineProps extends React.ComponentPropsWithoutRef<"view">{
   onGogo:()=>void;
   newOpt:()=>void;
   goBack:()=>void;
+  disabled:boolean;
 }
 interface FeatureNameInput extends React.ComponentPropsWithoutRef<"input">{
   name:string;
@@ -24,6 +25,7 @@ interface FeatureNameInput extends React.ComponentPropsWithoutRef<"input">{
 interface OptionFeatureContainerProps extends React.ComponentPropsWithoutRef<"view">{
   nameChanger:(name:string)=>void;
   activeChanger:(newActiveState:boolean)=>void;
+  disableGogo:(disabled:boolean)=>void;
   onDelete:()=>void;
   data?:{name:string,active:boolean}
 }
@@ -35,6 +37,7 @@ export default function ModalOptions(props:ModalOptionsProps){
     options:[]
   }  
   const [focusedOpt,setFocusedOpt] = React.useState<productOptions>(props.option ? props.option : newOption);
+  const [gogoDisabled,setGogoDisabled]  = React.useState<boolean>(true);
   
   function changeName(newName:string):void{
     const tempOptions   = {...focusedOpt};
@@ -46,6 +49,7 @@ export default function ModalOptions(props:ModalOptionsProps){
     if(tempOpt.options){
       tempOpt.options[index].name = name;
     }    
+    setGogoDisabled(false);
     setFocusedOpt(tempOpt);
   }
   function subOptionActiveChanger(activeState:boolean,index:number){
@@ -72,7 +76,7 @@ export default function ModalOptions(props:ModalOptionsProps){
   }
   function onGogo(){
     if(focusedOpt?.name && focusedOpt?.options.length > 0){
-      setFocusedOpt(newOption);    
+      //setFocusedOpt(newOption);    
       props.gogoAction(focusedOpt);    
     }else{
       alert('Empty option cannot be created');
@@ -99,8 +103,9 @@ export default function ModalOptions(props:ModalOptionsProps){
                                                 activeChanger={(newState:boolean)=>subOptionActiveChanger(newState,index)} 
                                                 nameChanger={(name:string)=>optionNameChanger(name,index)}
                                                 onDelete={()=>removeSubOption(index)}
+                                                disableGogo={setGogoDisabled}
                                                 />)}
-        <NavLine goBack={props.goBack} newOpt={addNewOption} onGogo={onGogo}/>
+        <NavLine goBack={props.goBack} newOpt={addNewOption} onGogo={onGogo} disabled={gogoDisabled}/>
       </View>
     </View>
   )
@@ -168,16 +173,17 @@ function OptionFeatureContainer(props:OptionFeatureContainerProps){
   
   const timer = React.useRef<number>(0);
   function nameChanger(name:string):void{
-    clearTimeout(timer.current);
-    setName(name);
-    timer.current = setTimeout(() => {
-        props.nameChanger(name);
-    }, 500);            
+    //clearTimeout(timer.current);
+    setName(name);    
+    //timer.current = setTimeout(() => {
+    //    props.nameChanger(name);
+    //}, 800);            
   }
   function enabledChanger(){
     const temp = !enabled;
     setEnabled(temp);
     props.activeChanger(temp);
+    props.disableGogo(false);
   }
   
   return  (
@@ -203,11 +209,13 @@ function OptionFeatureContainer(props:OptionFeatureContainerProps){
         />
         <TextInput 
           placeholder='Variante'
-          value={name}          
-          onChange={({ nativeEvent: {text} })=>nameChanger(text)}  
+          value={name}    
+          onFocus={()=>props.disableGogo(true)}      
+          onChange={({ nativeEvent: {text} })=>{nameChanger(text)}}  
+          onBlur={()=>{props.nameChanger(name)}}
+          onSubmitEditing={()=>{props.nameChanger(name)}}
           style={{minWidth:'50%'}}
-        />
-        
+        />        
       </Pressable>
     </Animated.View>
   )
@@ -228,11 +236,12 @@ function NavLine(props:NaviLineProps){
         </View>
       </Pressable>
       <Pressable 
+        disabled={props.disabled}
         style={{flexDirection:'row'}}
         onPress={props.onGogo}
       >
-        <Text style={[s.navigationText,{color:colorPalet.darkGreen}]}>GO GO</Text>
-        <Image source={images.rightArrow} style={{height:iconSize,width:iconSize,tintColor:colorPalet.darkGreen}}/>
+        <Text style={[s.navigationText,{color:props.disabled ? colorPalet.grey : colorPalet.darkGreen}]}>GO GO</Text>
+        <Image source={images.rightArrow} style={{height:iconSize,width:iconSize,tintColor:props.disabled ? colorPalet.grey : colorPalet.darkGreen}}/>
       </Pressable>      
     </View>
   )

@@ -1,10 +1,11 @@
 import React from 'react';
-import { View, TextInput, StyleSheet, Dimensions, ScrollView,BackHandler } from 'react-native';
+import { View, TextInput, StyleSheet, Dimensions, ScrollView,BackHandler, SegmentedControlIOSComponent } from 'react-native';
 import CleanHeader from './AuxComponents/CleanHeader';
 import NavigationRow from './AuxComponents/NavigationRow';
 import ProductOptions from './AuxComponents/ProductOptions';
 import ModalOptions from './AuxComponents/ModalOptions';
 import { colorPalet, fonts, fontStyle, product, productOptions } from '../util/util';
+import {postProductsRequest} from '../util/requests';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import CentralCiclingContainer from './AuxComponents/CentralCiclingContainer';
 import { NavigationProp } from '@react-navigation/native';
@@ -83,7 +84,7 @@ export default function NewEditProduct(props: {
     ],
     components: [],
   }
-  const [product, setProduct] = React.useState<Partial<product> & selectdProdProps>(tempProd);
+  const [product, setProduct] = React.useState<Partial<product> & selectdProdProps>(tempProd);  
   const [prodOpt,setProdOpt]  = React.useState<productOptions | undefined>(undefined);
   const [modalStatus, setModalStatus] = React.useState(false);
   const nameRef = React.useRef<TextInput>(null);
@@ -93,16 +94,27 @@ export default function NewEditProduct(props: {
     setModalStatus(false) ;    
     return true;
   }
+  async function postProduct(){
+    try{
+      const response = await postProductsRequest(product);
+      console.log(response);
+    }catch(e){
+      console.log(e);
+    }
+  }
   function cicleType(increment: number) {
     const maxIndex = productClassOptd.length - 1;
     const newIndex = product.selectedClass + increment;
     let tempProd = { ...product };
     if (newIndex > maxIndex) {
       tempProd.selectedClass = 0;
+      tempProd.class  = (productClassOptd[0][0] as typeof product.class);
     } else if (newIndex < 0) {
       tempProd.selectedClass = maxIndex;
+      tempProd.class  = (productClassOptd[maxIndex][0] as typeof product.class);
     } else {
-      tempProd.selectedClass = newIndex
+      tempProd.selectedClass = newIndex;
+      tempProd.class  = (productClassOptd[newIndex][0] as typeof product.class);
     }
     setProduct(tempProd);
   }
@@ -112,10 +124,13 @@ export default function NewEditProduct(props: {
     let tempProd = { ...product };
     if (newIndex > maxIndex) {
       tempProd.selectedSubClass = 0;
+      tempProd.subClass = (productSubClassOptd[0][0] as typeof product.subClass);
     } else if (newIndex < 0) {
       tempProd.selectedSubClass = maxIndex;
+      tempProd.subClass = (productSubClassOptd[maxIndex][0] as typeof product.subClass);
     } else {
-      tempProd.selectedSubClass = newIndex
+      tempProd.selectedSubClass = newIndex;
+      tempProd.subClass = (productSubClassOptd[newIndex][0] as typeof product.subClass);
     }
     setProduct(tempProd);
   }
@@ -129,8 +144,9 @@ export default function NewEditProduct(props: {
     setProduct(tempProd);
   }
   function nameChange(text: string) {
-    const tempProd = { ...product };
-    setProduct({ ...tempProd, name: text });
+    const tempProd  = { ...product };    
+    tempProd.name   = text;
+    setProduct(tempProd);
   }
   function NameInput(props: {
     value: string | undefined,
@@ -154,7 +170,8 @@ export default function NewEditProduct(props: {
         ref={nameRef}
         onChangeText={onChangeText}
         value={innerValue}
-        onSubmitEditing={({ nativeEvent: { text } }) => console.log(props.onChange(text))}
+        onSubmitEditing={({ nativeEvent: { text } })=>props.onChange(text)}
+        onBlur={()=>props.onChange(innerValue)}
       />
     )
   }
@@ -227,9 +244,14 @@ export default function NewEditProduct(props: {
     setProduct(tempProd);
   }
   function newOptionHandler(newOption:productOptions):void{
-    const tempOpt = product;
-    if(tempOpt.options){
-      tempOpt.options.push(newOption);
+    const tempOpt = {...product};
+    if(tempOpt.options){      
+      const actualIndex = tempOpt.options.findIndex(el=>el.name.toLowerCase().trim()===newOption.name.toLowerCase().trim());
+      if(actualIndex < 0){
+        tempOpt.options.push(newOption);
+      }else{
+        tempOpt.options.splice(actualIndex,1,newOption);        
+      }      
     }
     setModalStatus(false);
     setProduct(tempOpt);
@@ -245,14 +267,14 @@ export default function NewEditProduct(props: {
     <SafeAreaView style={{ backgroundColor: colorPalet.grey, minHeight: '100%' }}>
       <ModalOptions 
         option={prodOpt}
-        visible={modalStatus} 
+        visible={modalStatus}         
         gogoAction={newOptionHandler}
         goBack={()=>setModalStatus(false)}
         key={prodOpt? `modal-edit-${prodOpt.name}` : 'newOptionModal'}
       />
       <ScrollView>
         <CleanHeader />
-        <NavigationRow ohNoPress={() => { props.navigation.goBack() }} goGoPress={() => { }} loading={false} />
+        <NavigationRow ohNoPress={() => { props.navigation.goBack() }} goGoPress={postProduct} loading={false} />
         <CentralCiclingContainer        
           onLeftPress={() => cicleType(-1)}
           onRightPress={() => cicleType(1)}
@@ -281,7 +303,8 @@ export default function NewEditProduct(props: {
         <ProductOptions
           data={(product.options as productOptions[])}
           onNewOrEdit={modalOptionsHandler}          
-          onActiveChange={optionActivator}          
+          onActiveChange={optionActivator}        
+          key={`featureList-${product.options?.length}`}  
         />        
       </ScrollView>
     </SafeAreaView>

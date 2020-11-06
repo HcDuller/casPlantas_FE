@@ -17,10 +17,9 @@ interface ProductOptionRow extends React.ComponentPropsWithRef<"view">{
   onActiveChange:(active:boolean)=>void
 }
 const {width,height}  = Dimensions.get('window')
-
 export default function ProductOptions(props:ProdOptProps): JSX.Element{
   
-  const [instantPressed,setInstantPressed]  = React.useState(false);
+  const [instantPressed,setInstantPressed]  = React.useState(false);  
   
   function pressableStyle({pressed}:{pressed:boolean}) {
     const fs = StyleSheet.create({
@@ -52,23 +51,15 @@ export default function ProductOptions(props:ProdOptProps): JSX.Element{
       >
         <Text style={s.newOptionButtonText}>Nova Característica</Text>            
       </Pressable>    
-      {props.data.map((el:productOptions,index:number)=><ProductOptionRow onEdit={()=>props.onNewOrEdit(el)} option={el} onActiveChange={(active:boolean)=>{props.onActiveChange(index,active)}} key={`${el.name}-${index}-opt`}/>)}      
+      {props.data.map((el:productOptions,index:number,array:productOptions[])=>{return <ProductOptionRow onEdit={()=>props.onNewOrEdit(el)} option={el} onActiveChange={(active:boolean)=>{props.onActiveChange(index,active)}} key={`${el.name}-${index}-opt-${array.length}`}/>})}      
     </View>
   )
 }
-/*
- <FlatList 
-    data={props.data}
-    renderItem={({item}:{item:any})=>ListLine(item)}
-    keyExtractor={(item,index)=>`${item.name}-${index}`}
-  />
-*/
-
 function ProductOptionRow(props:ProductOptionRow): JSX.Element{
   
-  const {option} = props;  
+  const availableOpt = props.option.options.filter(el=>el.active);
   const [enabledOpt,setEnabledOpt]      = React.useState(props.option.active);
-  const [availableOpt,setAvailableOpt]  = React.useState(props.option.options.filter(el=>el.active));
+  //const [availableOpt,setAvailableOpt]  = React.useState(testeTemp);
   const [activeOpt,setActiveOpt]        = React.useState(0);
 
   const tiltBase  = React.useRef<Animated.Value>(new Animated.Value(0)).current;
@@ -98,11 +89,13 @@ function ProductOptionRow(props:ProductOptionRow): JSX.Element{
     }    
     setActiveOpt(newIndex);
   }
-  function changeActiveState(){
+  function changeActiveState(){    
     const prevState = enabledOpt;
     setEnabledOpt(!prevState);
-    props.onActiveChange(!prevState);    
+    props.onActiveChange(!prevState);
+    //props.onEdit(); //temporary use for debuggin
   }
+ 
   return (
     <Animated.View style={[s.hairlinedContainer,s.optionLine,{backgroundColor:finalColor,transform:[{rotate:degTilt}]}]}>
       <Pressable
@@ -119,13 +112,13 @@ function ProductOptionRow(props:ProductOptionRow): JSX.Element{
             value={enabledOpt}
             onValueChange={changeActiveState}
           />
-          <Text style={s.optionNameText}>{option.name.charAt(0).toUpperCase()+option.name.slice(1)}</Text>
+          <Text style={s.optionNameText}>{props.option.name.charAt(0).toUpperCase()+props.option.name.slice(1)}</Text>
         </View>
         <View style={[s.hairlinedContainer,{width:'50%',flexDirection:'row',justifyContent:'space-between',height:'100%',alignItems:'center'}]}>
           <Pressable onPress={()=>cicleSubOptions(-1)} style={{height:'100%',justifyContent:'center'}}>
             <Image style={[s.arrows,{marginLeft:5,marginRight:5}]} source={images.leftArrow}/>
           </Pressable>
-            <Text style={s.subOptionText}>{availableOpt[activeOpt].name}</Text>
+            <Text style={s.subOptionText}>{availableOpt[activeOpt] ? availableOpt[activeOpt].name : ''}</Text>
           <Pressable onPress={()=>cicleSubOptions(1)} style={{height:'100%',justifyContent:'center'}}>
             <Image style={[s.arrows,{marginRight:5,marginLeft:5}]} source={images.rightArrow}/>
           </Pressable>
@@ -138,7 +131,6 @@ const images = {
   leftArrow   : require('../../assets/icons/Arrow_L.png'),
   rightArrow  : require('../../assets/icons/Arrow_R.png')
 }
-
 const s = StyleSheet.create({
   centralContainer:{    
     width:width*0.8,        

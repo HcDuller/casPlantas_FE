@@ -66,7 +66,15 @@ export default function Home(props:any){
     (async()=>{      
       setOrders(await getOrders(activeDate.date));
     })()    
-  },[])
+  },[]);
+  React.useEffect(() => {
+    const unsubscribe = props.navigation.addListener('focus', () => {
+      (async()=>{      
+        setOrders(await getOrders(activeDate.date));
+      })()    
+    });
+    return unsubscribe;
+  },[props.navigation]);
   return (    
     <SafeAreaView style={s.screen}>          
       <View style={{alignItems:"center",justifyContent:"center"}}>

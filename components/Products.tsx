@@ -35,6 +35,17 @@ export default function Products(props:any) : JSX.Element{
     })();
     
   },[])
+  React.useEffect(() => {
+    const unsubscribe = props.navigation.addListener('focus', () => {
+      (async()=>{
+        const tempProds = await getProds();      
+        setProds(tempProds);
+        setLoadingProds(false);
+      })();
+    });
+
+    return unsubscribe;
+  },[props.navigation]);
   
   return (
     <SafeAreaView style={s.screen}>      
