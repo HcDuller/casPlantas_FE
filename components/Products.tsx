@@ -4,6 +4,7 @@ import CleanHeader from './AuxComponents/CleanHeader';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import ProdCard from './AuxComponents/ProductCard';
 import { AntDesign } from '@expo/vector-icons';
+import { NavigationProp } from '@react-navigation/native';
 
 import {getProductsRequest} from '../util/requests';
 import {colorPalet, product} from '../util/util';
@@ -22,7 +23,11 @@ async function getProds(){
     return []
   }
 }
-export default function Products(props:any) : JSX.Element{
+interface ProductProps extends React.ComponentPropsWithRef<"view">{
+  navigation: NavigationProp<Record<string, object | undefined>, string, Readonly<navProp>, {}, {}>,
+  route: any,  
+}
+export default function Products(props:ProductProps) : JSX.Element{
 
   const [prods,setProds] = React.useState([]);
   const [loadingProds,setLoadingProds] = React.useState(true);
@@ -47,6 +52,9 @@ export default function Products(props:any) : JSX.Element{
     return unsubscribe;
   },[props.navigation]);
   
+  function editProduct(product:product){
+    props.navigation.navigate('prodEdit',{product:product})
+  }
   return (
     <SafeAreaView style={s.screen}>      
       <View style={{alignItems:"center",justifyContent:"center"}}>
@@ -64,8 +72,7 @@ export default function Products(props:any) : JSX.Element{
         {loadingProds && prods.length>0 ? undefined : 
           <FlatList 
             data={prods.map((el:product)=>{return {id:el._id,...el}})}
-            renderItem={({item}:{item:product})=>(<ProdCard height={height*0.08} width={width*0.8} data={item} key={item?._id}/>)}
-            
+            renderItem={({item}:{item:product})=>(<ProdCard height={height*0.08} width={width*0.8} data={item} key={item?._id} edit={()=>editProduct(item)}/>)}            
           />
         }        
       </View>      

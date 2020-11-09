@@ -198,3 +198,6 @@ export function isClient(client:any) : client is client{
   existingKeys.find(el=>el==='name')       ?  conditions.push(true) : conditions.push(false) ;
   return existingKeys.every(el=>el);
 }
+export function simpleDelay(time:number){
+  return new Promise((resolve)=>{return setTimeout(resolve,time)})
+}

@@ -114,6 +114,23 @@ export async function postProductsRequest(product?:product) {
 		throw e;
 	}
 }
+export async function patchProductsRequest(product?:product) {
+  try{
+		const worker = axios.create({
+			baseURL:endPoint,
+			headers:globalHeader,
+			timeout:1000
+		});
+		let params = {};
+		if(product){
+			params = {product};
+		}
+		const {data} = await worker.patch('/product',params);
+		return data
+	}catch(e){
+		throw e;
+	}
+}
 export async function getClients() : Promise<client[]> {
   try{
     const worker = axios.create({

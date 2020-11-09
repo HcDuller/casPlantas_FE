@@ -1,10 +1,15 @@
 import React from 'react';
-import {View,Text,StyleSheet,Image} from 'react-native';
+import {View,Text,StyleSheet,Image,Pressable} from 'react-native';
 import {colorPalet, product} from '../../util/util';
 
+interface ProductCardProps extends React.ComponentPropsWithRef<"view">{
+  height:number,
+  width:number,
+  data:Partial<product>,
+  edit:()=>void,
+}
 
-
-export default function ProductCard(props:{height:number,width:number,data:Partial<product>}) : JSX.Element{
+export default function ProductCard(props:ProductCardProps) : JSX.Element{
   const productPng = require('../../assets/icons/Product.png');
   const s = StyleSheet.create({
     outterContainer:{            
@@ -23,16 +28,18 @@ export default function ProductCard(props:{height:number,width:number,data:Parti
     }
   })
   return (
-    <View style={s.outterContainer}>      
+    <Pressable 
+      onPress={props.edit}
+      style={s.outterContainer}>      
       <Image source={productPng} resizeMethod='resize' resizeMode='contain' style={s.imageContainer}/>    
       <View>
         <Text>{props.data.name}</Text>
         <Text>R${props.data.value}</Text>
         <Text>
           {props.data.components? 'Components: ': undefined}
-          {props.data.components?.map((el:product)=>el.name).join(',')}
+          {props.data.components?.map((el:any)=>el.name).join(',')}
         </Text>
       </View>
-    </View>
+    </Pressable>
   )
 }

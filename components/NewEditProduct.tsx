@@ -1,14 +1,15 @@
 import React from 'react';
-import { View, TextInput, StyleSheet, Dimensions, ScrollView,BackHandler, SegmentedControlIOSComponent } from 'react-native';
+import { TextInput, StyleSheet, Dimensions, ScrollView,BackHandler } from 'react-native';
 import CleanHeader from './AuxComponents/CleanHeader';
 import NavigationRow from './AuxComponents/NavigationRow';
 import ProductOptions from './AuxComponents/ProductOptions';
 import ModalOptions from './AuxComponents/ModalOptions';
-import { colorPalet, fonts, fontStyle, product, productOptions } from '../util/util';
-import {postProductsRequest} from '../util/requests';
+import { colorPalet, fonts, fontStyle, product, productOptions, simpleDelay } from '../util/util';
+import {postProductsRequest,patchProductsRequest} from '../util/requests';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import ProgressBar from './AuxComponents/ProgressBar';
 import CentralCiclingContainer from './AuxComponents/CentralCiclingContainer';
-import { NavigationProp } from '@react-navigation/native';
+import { NavigationProp,RouteProp } from '@react-navigation/native';
 
 
 type selectdProdProps = { selectedClass: number, selectedSubClass: number };
@@ -34,6 +35,39 @@ const productSubClassOptd = [
   ['vase', 'Vaso'],
   ['plant vase', 'Vaso de Planta']
 ]
+const defaultNewProduct : Partial<product> & selectdProdProps = {
+  name: 'Nome Padrao',
+  value: 0,
+  class: 'product',
+  subClass: 'basic',
+  selectedClass: 0,    // base value must be assigned programmatically based on props.route.param.product.class,     when available
+  selectedSubClass: 2, // base value must be assigned programmatically based on props.route.param.product.subClass,  when available
+  options: [
+    {
+      name:'tamanho',
+      active:true,
+      options:[
+        {
+          name:'P',
+          active:true            
+        },
+        {
+          name:'M',
+          active:true            
+        },
+        {
+          name:'G',
+          active:true            
+        },
+        {
+          name:'GG',
+          active:true            
+        }
+      ]
+    }
+  ],
+  components: [],
+}
 type navProp = {
   key: string;
   index: number;
@@ -47,45 +81,27 @@ type navProp = {
   type: string;
   stale: false;
 }
-export default function NewEditProduct(props: {
+interface NewEditProductProps extends React.ComponentPropsWithRef<"view">{
   navigation: NavigationProp<Record<string, object | undefined>, string, Readonly<navProp>, {}, {}>,
-  route: any
-}): JSX.Element {
-  const tempProd: Partial<product> & selectdProdProps = {
-    name: 'Nome Padrao',
-    value: 0,
-    class: 'product',
-    subClass: 'basic',
-    selectedClass: 0,    // base value must be assigned programmatically based on props.route.param.product.class,     when available
-    selectedSubClass: 2, // base value must be assigned programmatically based on props.route.param.product.subClass,  when available
-    options: [
-      {
-        name:'tamanho',
-        active:true,
-        options:[
-          {
-            name:'P',
-            active:true            
-          },
-          {
-            name:'M',
-            active:true            
-          },
-          {
-            name:'G',
-            active:true            
-          },
-          {
-            name:'GG',
-            active:true            
-          }
-        ]
-      }
-    ],
-    components: [],
+  route: any,  
+}
+function parseProduct(product:product) : Partial<product> & selectdProdProps {
+  const classNumber     = productClassOptd.findIndex(el=>el[0].toLowerCase()===product.class.toLowerCase());
+  const subClassNumber  = productSubClassOptd.findIndex(el=>el[0].toLowerCase()===product.subClass.toLowerCase());
+  const parsedProd : Partial<product> & selectdProdProps = {
+    selectedClass : classNumber > -1 ? classNumber : 0,
+    selectedSubClass  : subClassNumber > -1 ? subClassNumber : 0,
+    ...product
   }
+  return parsedProd;
+}
+export default function NewEditProduct(props: NewEditProductProps): JSX.Element {
+  
+  const parsedProd : (Partial<product> & selectdProdProps) | boolean = props?.route?.params?.product ? parseProduct(props.route.params.product) : false;
+  const tempProd: Partial<product> & selectdProdProps = parsedProd ? parsedProd : defaultNewProduct;  
   const [product, setProduct] = React.useState<Partial<product> & selectdProdProps>(tempProd);  
   const [prodOpt,setProdOpt]  = React.useState<productOptions | undefined>(undefined);
+  const [loading,setLoading]  = React.useState<boolean>(false);
   const [modalStatus, setModalStatus] = React.useState(false);
   const nameRef = React.useRef<TextInput>(null);
   
@@ -94,12 +110,20 @@ export default function NewEditProduct(props: {
     setModalStatus(false) ;    
     return true;
   }
-  async function postProduct(){
+  async function saveProduct(){
     try{
-      const response = await postProductsRequest(product);
-      console.log(response);
-    }catch(e){
-      console.log(e);
+      setLoading(true);      
+      if(parsedProd){ //parsedProd is either a product os a false(boolean)
+        const response = await patchProductsRequest(product);        
+      }else{
+        const response = await postProductsRequest(product);
+      }
+      await simpleDelay(2000);
+      setLoading(false);      
+      props.navigation.goBack();
+    }catch(e){      
+      setLoading(false);
+      alert('Erro ao salvar produto');
     }
   }
   function cicleType(increment: number) {
@@ -179,8 +203,7 @@ export default function NewEditProduct(props: {
     value: number | undefined,
     onChange: (text: number) => void
   }) {
-
-    const [innerValue, setInnerValue] = React.useState<string>(props.value ? padronizeValue(props.value.toString()) : '0.00');
+    const [innerValue, setInnerValue] = React.useState<string>(props.value ? padronizeValue(props.value.toFixed(2)) : '0.00');
     const l = StyleSheet.create({
       localStyle: {
         fontFamily: 'AlegreyaSans-Bold',
@@ -263,6 +286,8 @@ export default function NewEditProduct(props: {
       setProdOpt(option);
     }
   }  
+  //simpleDelay
+  //{loading?(<ProgressBar width={width} height={height*0.005} color={colorPalet.darkGreen} duration={2000}/>):undefined}
   return (
     <SafeAreaView style={{ backgroundColor: colorPalet.grey, minHeight: '100%' }}>
       <ModalOptions 
@@ -271,10 +296,10 @@ export default function NewEditProduct(props: {
         gogoAction={newOptionHandler}
         goBack={()=>setModalStatus(false)}
         key={prodOpt? `modal-edit-${prodOpt.name}` : 'newOptionModal'}
-      />
+      />      
       <ScrollView>
         <CleanHeader />
-        <NavigationRow ohNoPress={() => { props.navigation.goBack() }} goGoPress={postProduct} loading={false} />
+        <NavigationRow ohNoPress={() => { props.navigation.goBack() }} goGoPress={saveProduct} loading={loading} />
         <CentralCiclingContainer        
           onLeftPress={() => cicleType(-1)}
           onRightPress={() => cicleType(1)}

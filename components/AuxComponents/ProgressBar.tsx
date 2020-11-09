@@ -1,8 +1,17 @@
 import React, { SetStateAction } from 'react';
 import {Animated,View,TouchableHighlight,Text, Easing} from 'react-native';
 
-export default function ProgressBar ({color,width,height,duration}:{color:string,width:number,height:number,duration:number,}) : JSX.Element{
 
+interface ProgressBarProps extends React.ComponentPropsWithoutRef<"view">{
+  color:string,
+  width:number,
+  height:number,
+  duration:number
+}
+//{color,width,height,duration}:{color:string,width:number,height:number,duration:number,}
+export default function ProgressBar (props:ProgressBarProps) : JSX.Element{
+
+  const {color,width,height,duration} = props;
   
   const prValue         = React.useRef(new Animated.Value(0)).current;
   const invertedPrValue = React.useRef(new Animated.Value(width)).current;
