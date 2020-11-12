@@ -10,6 +10,7 @@ interface ModalOptionsProps extends React.ComponentPropsWithoutRef<"view">{
   navigation?:any;
   option?:productOptions;  
   gogoAction:(newOpt:productOptions)=>void;
+  onDeleteAction:(_id:string)=>void;
   goBack:()=>void
 }
 interface NaviLineProps extends React.ComponentPropsWithoutRef<"view">{
@@ -21,6 +22,7 @@ interface NaviLineProps extends React.ComponentPropsWithoutRef<"view">{
 interface FeatureNameInput extends React.ComponentPropsWithoutRef<"input">{
   name:string;
   nameChanger:(name:string)=>void;
+  onDelete:()=>void;
 }
 interface OptionFeatureContainerProps extends React.ComponentPropsWithoutRef<"view">{
   nameChanger:(name:string)=>void;
@@ -92,11 +94,18 @@ export default function ModalOptions(props:ModalOptionsProps){
   if(!props.visible){
     return <></>
   }
+  function onDelete(){
+    if(focusedOpt?._id){
+      props.onDeleteAction(focusedOpt?._id);
+    }    
+    props.goBack()
+  }
+
   
   return (    
     <View style={[s.screen,{paddingTop:(insets.top+height*0.15+10)}]}>
       <View style={[s.centralContainer]}>
-        <FeatureNameInput nameChanger={changeName} name={focusedOpt.name}/>
+        <FeatureNameInput nameChanger={changeName} onDelete={onDelete} name={focusedOpt.name}/>
         {focusedOpt.options.map((el,index)=><OptionFeatureContainer 
                                                 key={`father-${el.name}-${index}`}                                                
                                                 data={el}
@@ -139,7 +148,7 @@ function FeatureNameInput(props:FeatureNameInput){
         delayLongPress={msToDelete}
         onPressIn={()=>Animated.parallel([shake,holding]).start()}
         onPressOut={()=>{shake.reset();holding.reset();straighten.start();}}
-        onLongPress={()=>alert('deleta')}        
+        onLongPress={props.onDelete}//  Remover a opcao em si do state do HOC, fechar o modal.
       >
         <TextInput 
           placeholder='Nome da Característica'

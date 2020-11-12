@@ -3,6 +3,7 @@ import React from 'react';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import Home from './Home';
 import Products from './Products';
+import Clients from './Clients'
 import {Image} from 'react-native'
 import {colorPalet} from '../util/util';
 
@@ -36,7 +37,7 @@ export default function HomeNavigator(props:any){
         options={{                    
           tabBarIcon:({color,size})=>(<Image source={clientPng} style={{width:30,height:30,tintColor:color}}/>)
         }}
-      component={Home}/>
+      component={Clients}/>
       <Tab.Screen 
         name='products' 
         options={{          

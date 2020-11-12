@@ -4,12 +4,12 @@ import CleanHeader from './AuxComponents/CleanHeader';
 import NavigationRow from './AuxComponents/NavigationRow';
 import ProductOptions from './AuxComponents/ProductOptions';
 import ModalOptions from './AuxComponents/ModalOptions';
-import { colorPalet, fonts, fontStyle, product, productOptions, simpleDelay } from '../util/util';
+import { colorPalet, fonts, fontStyle, product, productOptions } from '../util/util';
 import {postProductsRequest,patchProductsRequest} from '../util/requests';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import ProgressBar from './AuxComponents/ProgressBar';
 import CentralCiclingContainer from './AuxComponents/CentralCiclingContainer';
-import { NavigationProp,RouteProp } from '@react-navigation/native';
+import { NavigationProp} from '@react-navigation/native';
 
 
 type selectdProdProps = { selectedClass: number, selectedSubClass: number };
@@ -111,15 +111,12 @@ export default function NewEditProduct(props: NewEditProductProps): JSX.Element 
     return true;
   }
   async function saveProduct(){
-    try{
-      setLoading(true);      
+    try{      
       if(parsedProd){ //parsedProd is either a product os a false(boolean)
         const response = await patchProductsRequest(product);        
       }else{
         const response = await postProductsRequest(product);
-      }
-      await simpleDelay(2000);
-      setLoading(false);      
+      }            
       props.navigation.goBack();
     }catch(e){      
       setLoading(false);
@@ -279,6 +276,11 @@ export default function NewEditProduct(props: NewEditProductProps): JSX.Element 
     setModalStatus(false);
     setProduct(tempOpt);
   }
+  function deleteOption(_id:string){
+    const tempProd = { ...product};
+    tempProd.options = tempProd.options?.filter(el=>el?._id !== _id);
+    setProduct(tempProd)
+  }
   function modalOptionsHandler(option?:productOptions){    
     if(!modalStatus){
       BackHandler.addEventListener('hardwareBackPress',pseudoModalController);      
@@ -295,11 +297,12 @@ export default function NewEditProduct(props: NewEditProductProps): JSX.Element 
         visible={modalStatus}         
         gogoAction={newOptionHandler}
         goBack={()=>setModalStatus(false)}
+        onDeleteAction={deleteOption}
         key={prodOpt? `modal-edit-${prodOpt.name}` : 'newOptionModal'}
       />      
       <ScrollView>
         <CleanHeader />
-        <NavigationRow ohNoPress={() => { props.navigation.goBack() }} goGoPress={saveProduct} loading={loading} />
+        <NavigationRow ohNoPress={() => { props.navigation.goBack() }} goGoPress={saveProduct} loading={false} />
         <CentralCiclingContainer        
           onLeftPress={() => cicleType(-1)}
           onRightPress={() => cicleType(1)}

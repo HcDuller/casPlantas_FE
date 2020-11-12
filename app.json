@@ -21,6 +21,9 @@
     },
     "web": {
       "favicon": "./assets/icons/logo.png"
+    },
+    "android": {
+      "package": "android.casplantas"
     }
   }
 }

@@ -1,7 +1,15 @@
+import React from 'react';
+import { NavigationProp,RouteProp,Route} from '@react-navigation/native';
+
 type productClass       = 'product'|'accessory'|'service';
 type productSubClass    = 'kokedama'|'plant vase'|'succulents vase'|'accessory'|'plant'|'consulting'|'miniatures'|'holder'|'tripod'|'dish'|'basic'|'fertilizer'|'vase'|'cachepot';
 
+export interface ComponentWithNavigationProps extends React.ComponentPropsWithoutRef<"view">{
+  navigation: NavigationProp<Record<string, object | undefined>, string, Readonly<navProp>, {}, {}>,
+  route: RouteProp<Record<string,object|undefined>,'name'>, 
+}
 export type productOptions     = {
+  _id?:string,
   name:string,
   active:boolean,
   options:{
@@ -10,7 +18,19 @@ export type productOptions     = {
     active:boolean,      
   }[]
 }
-
+export type navProp = {
+  key: string;
+  index: number;
+  routeNames: string[];
+  history?: unknown[] | undefined;
+  routes: (Readonly<{
+    key: string;
+    name: string;
+    params?: object | undefined;
+  }>)[];
+  type: string;
+  stale: false;
+}
 export interface order {
   _id: string,
   clientId: string,

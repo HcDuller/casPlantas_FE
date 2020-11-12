@@ -7,12 +7,14 @@ import { AntDesign } from '@expo/vector-icons';
 import { NavigationProp } from '@react-navigation/native';
 
 import {getProductsRequest} from '../util/requests';
-import {colorPalet, product} from '../util/util';
-import { floor } from 'react-native-reanimated';
+import {colorPalet, product, navProp} from '../util/util';
+
 
 const height = Dimensions.get('window').height;
 const width = Dimensions.get('window').width;
-const logoDimentions = Math.floor(height*0.1)
+const logoDimentions = Math.floor(height*0.1);
+
+
 
 async function getProds(){
   try{
@@ -25,11 +27,12 @@ async function getProds(){
 }
 interface ProductProps extends React.ComponentPropsWithRef<"view">{
   navigation: NavigationProp<Record<string, object | undefined>, string, Readonly<navProp>, {}, {}>,
-  route: any,  
+  route: any,
 }
 export default function Products(props:ProductProps) : JSX.Element{
 
   const [prods,setProds] = React.useState([]);
+  const [showAll,setShowAll]  = React.useState<boolean>(false);
   const [loadingProds,setLoadingProds] = React.useState(true);
 
   React.useEffect(()=>{    
@@ -71,7 +74,7 @@ export default function Products(props:ProductProps) : JSX.Element{
       <View style={s.centralContainer}>
         {loadingProds && prods.length>0 ? undefined : 
           <FlatList 
-            data={prods.map((el:product)=>{return {id:el._id,...el}})}
+            data={prods.filter((el:product)=>{if(showAll){return true}else{return el.active}}).map((el:product)=>{return {id:el._id,...el}})}
             renderItem={({item}:{item:product})=>(<ProdCard height={height*0.08} width={width*0.8} data={item} key={item?._id} edit={()=>editProduct(item)}/>)}            
           />
         }        
