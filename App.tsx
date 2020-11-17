@@ -9,10 +9,11 @@ import { createStackNavigator,CardStyleInterpolators,StackNavigationOptions } fr
 const Stack = createStackNavigator();
 
 
-import HomeNavigation   from './components/HomeNavigation';
+import HomeNavigation   from  './components/HomeNavigation';
 import NewOrder         from  './components/NewOrder';
 import EditOrder        from  './components/EditOrder';
-import NewEditProduct   from './components/NewEditProduct';
+import NewEditProduct   from  './components/NewEditProduct';
+import EditClient       from  './components/EditClient';
 
 
 const Tab = createBottomTabNavigator();
@@ -53,7 +54,11 @@ export default function App() {
           <Tab.Screen 
             name='prodEdit'
             component={NewEditProduct}
-          />               
+          />    
+          <Tab.Screen 
+            name='cliEdit'
+            component={EditClient}
+          />             
         </Stack.Navigator>                                
       </NavigationContainer>
     )

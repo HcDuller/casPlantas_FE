@@ -139,16 +139,19 @@ export async function getClients() : Promise<client[]> {
 			timeout:1000
 		});
 		let params = {};		
-    const {data} = await worker.get('/entities');
+    const {data} = await worker.get('/entities');    
     const clients : client[] = data.filter((el:any)=>{
       if(isClient(el)){
         return el;
       }
-    });
+    }).sort((a,b)=>a.name>b.name ? 1 : -1);
 		return clients
   }catch(e){
     throw e;
   }
+}
+export async function autocomplete(input:string):Promise<string>{
+  return 'a'
 }
 /*
 function orderQueryParser(key:string,value:Date|number){
