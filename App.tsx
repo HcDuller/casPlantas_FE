@@ -5,8 +5,17 @@ import { useFonts } from 'expo-font';
 import { AppLoading } from 'expo';
 import { NavigationContainer } from '@react-navigation/native';
 import { createStackNavigator,CardStyleInterpolators,StackNavigationOptions } from '@react-navigation/stack';
+import {order,client} from './util/util';
 
-const Stack = createStackNavigator();
+type RootStackParamList = {
+  homeNavigation  : undefined,
+  newOrder        : {data?:Date,order?:order},
+  editOrder       : {order:order},  
+  prodEdit        : undefined,
+  cliEdit         : {client:client}
+}
+
+const Stack = createStackNavigator<RootStackParamList>();
 
 
 import HomeNavigation   from  './components/HomeNavigation';
@@ -17,8 +26,6 @@ import EditClient       from  './components/EditClient';
 
 
 const Tab = createBottomTabNavigator();
-
-
 
 export default function App() {
 

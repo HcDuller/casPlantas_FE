@@ -1,5 +1,6 @@
 import React from 'react';
-import {View,Text,TouchableOpacity,Image, StyleSheet,Dimensions} from 'react-native'
+import {View,Text,TouchableOpacity,Image, StyleSheet,Dimensions} from 'react-native';
+import {KeyboardAvoidingView} from 'react-native'
 import {colorPalet,fonts} from '../../util/util';
 const {width:windowWidth,height:windowHeight} = Dimensions.get('window');
 
@@ -13,7 +14,7 @@ export default function CentralCiclingContainer(
       onLeftPress?:()=>void,
       onCenterPress?:()=>void,
       onRightPress?:()=>void,
-      content?:string|JSX.Element|undefined,
+      content?:string|JSX.Element|undefined|JSX.Element[],
       title?:string,
       contentDisposition?: 'center'|'space-between'
     }
@@ -41,13 +42,14 @@ export default function CentralCiclingContainer(
     centralContainerComponents:{
       alignContent:'center',
       justifyContent:'center',
-      minWidth:windowWidth*0.25,
+      //minWidth:windowWidth*0.25,
+      flexGrow:1,
       height:windowHeight*0.06
     },
     centralContainerIcons:{    
       alignSelf:'center',    
       height:windowHeight*0.02,
-      width:windowHeight*0.02
+      width:windowHeight*0.02      
     },
     title:{
       fontFamily:'AlegreyaSans-Bold',
@@ -82,7 +84,7 @@ export default function CentralCiclingContainer(
   const conditionalRightArrowComponent = props.onRightPress ? rightComponent : undefined;
 
   return (
-    <View style={s.centralContainer}>
+    <KeyboardAvoidingView style={s.centralContainer}>
       {headerComponent}
       <View style={s.cicleContainer}>              
         {conditionalLeftArrowComponent}
@@ -91,6 +93,6 @@ export default function CentralCiclingContainer(
         </TouchableOpacity>  
         {conditionalRightArrowComponent}
       </View>
-    </View>
+    </KeyboardAvoidingView>
   )
 }

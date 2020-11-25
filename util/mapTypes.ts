@@ -7,7 +7,7 @@ type	GeocoderLocationType	=	"ROOFTOP"|"RANGE_INTERPOLATED"|"GEOMETRIC_CENTER"|"A
 type 	pluscode	=	{global_code:string,compound_code:string};
 type 	types =	'street_address'|'route'|'intersection'|'political'|'country'|'administrative_area_level_1'|'administrative_area_level_2'|'administrative_area_level_3'|'administrative_area_level_4'|'administrative_area_level_5'|'colloquial_area'|'locality'|'sublocality'|'neighborhood'|'premise'|'subpremise'|'plus_code'|'postal_code'|'natural_feature'|'airport'|'park'|'point_of_interest';
 type 	addressComponentType	=	'accounting'|'airport'|'amusement_park'|'aquarium'|'art_gallery'|'atm'|'bakery'|'bank'|'bar'|'beauty_salon'|'bicycle_store'|'book_store'|'bowling_alley'|'bus_station'|'cafe'|'campground'|'car_dealer'|'car_rental'|'car_repair'|'car_wash'|'casino'|'cemetery'|'church'|'city_hall'|'clothing_store'|'convenience_store'|'courthouse'|'dentist'|'department_store'|'doctor'|'drugstore'|'electrician'|'electronics_store'|'embassy'|'fire_station'|'florist'|'funeral_home'|'furniture_store'|'gas_station'|'gym'|'hair_care'|'hardware_store'|'hindu_temple'|'home_goods_store'|'hospital'|'insurance_agency'|'jewelry_store'|'laundry'|'lawyer'|'library'|'light_rail_station'|'liquor_store'|'local_government_office'|'locksmith'|'lodging'|'meal_delivery'|'meal_takeaway'|'mosque'|'movie_rental'|'movie_theater'|'moving_company'|'museum'|'night_club'|'painter'|'park'|'parking'|'pet_store'|'pharmacy'|'physiotherapist'|'plumber'|'police'|'post_office'|'primary_school'|'real_estate_agency'|'restaurant'|'roofing_contractor'|'rv_park'|'school'|'secondary_school'|'shoe_store'|'shopping_mall'|'spa'|'stadium'|'storage'|'store'|'subway_station'|'supermarket'|'synagogue'|'taxi_stand'|'tourist_attraction'|'train_station'|'transit_station'|'travel_agency'|'university'|'veterinary_care'|'zoo'|'administrative_area_level_1'|'administrative_area_level_2'|'administrative_area_level_3'|'administrative_area_level_4'|'administrative_area_level_5'|'archipelago'|'colloquial_area'|'continent'|'country'|'establishment'|'finance'|'floor'|'food'|'general_contractor'|'geocode'|'health'|'intersection'|'landmark'|'locality'|'natural_feature'|'neighborhood'|'place_of_worship'|'plus_code'|'point_of_interest'|'political'|'post_box'|'postal_code'|'postal_code_prefix'|'postal_code_suffix'|'postal_town'|'premise'|'room'|'route'|'street_address'|'street_number'|'sublocality'|'sublocality_level_1'|'sublocality_level_2'|'sublocality_level_3'|'sublocality_level_4'|'sublocality_level_5'|'subpremise'|'town_square';
-type	responseStatus	=	"OK"|"ZERO_RESULTS"|"OVER_QUERY_LIMIT"|"REQUEST_DENIED"|"INVALID_REQUEST"|"UNKNOWN_ERROR"|"ERROR";
+export type	responseStatus	=	"OK"|"ZERO_RESULTS"|"OVER_QUERY_LIMIT"|"REQUEST_DENIED"|"INVALID_REQUEST"|"UNKNOWN_ERROR"|"ERROR";
 type	GeocoderComponentRestrictions	=	{
 	administrativeArea: string,
 	country:						string,
@@ -15,7 +15,7 @@ type	GeocoderComponentRestrictions	=	{
 	postalCode:					string,
 	route:							string
 }
-type result = {
+export type GeocoderResult = {
 	types: 								types[],
 	formatted_address: 		string,	
 	partial_match: 				boolean,
@@ -35,7 +35,7 @@ type result = {
 		bounds: 				LatLngBounds
 	}		
 }
-interface GeocoderRequest {
+export interface GeocoderRequest {
 	address?: 							string,
 	bounds?:								LatLngBounds|LatLngBoundsLiteral,
 	componentRestrictions?:	GeocoderComponentRestrictions,
@@ -43,32 +43,32 @@ interface GeocoderRequest {
 	placeId?:								string,
 	region?:								string
 }
-interface GeocoderResponse{
-	results:	result[],
-	status:		string
+export interface GeocoderResponse{
+	results:	GeocoderResult[],
+	status:		responseStatus
 }
-function isTypes(arg:any):arg is types{
+export function isTypes(arg:any):arg is types{
 	const acceptableTypes	=	['street_address','route','intersection','political','country','administrative_area_level_1','administrative_area_level_2','administrative_area_level_3','administrative_area_level_4','administrative_area_level_5','colloquial_area','locality','sublocality','neighborhood','premise','subpremise','plus_code','postal_code','natural_feature','airport','park','point_of_interest']
 	return typeof arg === 'string' ? acceptableTypes.filter(el=>el===arg).length > 0 : false;
 }
-function isAddressComponentType(arg:any):arg is types{
+export function isAddressComponentType(arg:any):arg is types{
 	const acceptableTypes	=	['accounting','airport','amusement_park','aquarium','art_gallery','atm','bakery','bank','bar','beauty_salon','bicycle_store','book_store','bowling_alley','bus_station','cafe','campground','car_dealer','car_rental','car_repair','car_wash','casino','cemetery','church','city_hall','clothing_store','convenience_store','courthouse','dentist','department_store','doctor','drugstore','electrician','electronics_store','embassy','fire_station','florist','funeral_home','furniture_store','gas_station','gym','hair_care','hardware_store','hindu_temple','home_goods_store','hospital','insurance_agency','jewelry_store','laundry','lawyer','library','light_rail_station','liquor_store','local_government_office','locksmith','lodging','meal_delivery','meal_takeaway','mosque','movie_rental','movie_theater','moving_company','museum','night_club','painter','park','parking','pet_store','pharmacy','physiotherapist','plumber','police','post_office','primary_school','real_estate_agency','restaurant','roofing_contractor','rv_park','school','secondary_school','shoe_store','shopping_mall','spa','stadium','storage','store','subway_station','supermarket','synagogue','taxi_stand','tourist_attraction','train_station','transit_station','travel_agency','university','veterinary_care','zoo','administrative_area_level_1','administrative_area_level_2','administrative_area_level_3','administrative_area_level_4','administrative_area_level_5','archipelago','colloquial_area','continent','country','establishment','finance','floor','food','general_contractor','geocode','health','intersection','landmark','locality','natural_feature','neighborhood','place_of_worship','plus_code','point_of_interest','political','post_box','postal_code','postal_code_prefix','postal_code_suffix','postal_town','premise','room','route','street_address','street_number','sublocality','sublocality_level_1','sublocality_level_2','sublocality_level_3','sublocality_level_4','sublocality_level_5','subpremise','town_square'];
 	return typeof arg === 'string' ? acceptableTypes.filter(el=>el===arg).length > 0 : false;
 }
-function isResult(arg:any):arg is result{
+export function isGeocoderResult(arg:any):arg is GeocoderResult{
 	return true;
 }
-function isResponseStatus(arg:string){
+export function isResponseStatus(arg:string){
 	const acceptableStatus	=	["OK","ZERO_RESULTS","OVER_QUERY_LIMIT","REQUEST_DENIED","INVALID_REQUEST","UNKNOWN_ERROR","ERROR"];
 	return acceptableStatus.filter(el=>el===arg).length > 0;
 }
-function isLatLngBounds(arg:any): arg is LatLngBounds{
+export function isLatLngBounds(arg:any): arg is LatLngBounds{
 	const length 	= arg.length === 2;
 	const lat			=	typeof arg[0] === 'number';
 	const lng			=	typeof arg[1] === 'number';
 	return length && lat && lng;
 }
-function isLatLng(arg:[number,number]): arg is LatLng{
+export function isLatLng(arg:[number,number]): arg is LatLng{
 	const fixedLen = arg.length === 2;		
 	const lat = (()=>{
 		if(typeof arg[0] === 'number'){
@@ -86,14 +86,14 @@ function isLatLng(arg:[number,number]): arg is LatLng{
 	})()	
 	return fixedLen && lat && lng;
 }
-function isGeocoderLocationType(arg:any): arg is GeocoderLocationType{
+export function isGeocoderLocationType(arg:any): arg is GeocoderLocationType{
 	return arg === "ROOFTOP" || arg === "RANGE_INTERPOLATED" ||arg === "GEOMETRIC_CENTER" ||arg === "APPROXIMATE";
 }
-function isGeocoderResponse(arg:any): arg is GeocoderResponse{
+export function isGeocoderResponse(arg:any): arg is GeocoderResponse{
 	let 	results 	= arg.results ? Array.isArray(arg.results) 	: false;
-	const status		=	typeof arg?.status === 'string'	?	isResponseStatus(arg)	:	false;
+	const status		=	typeof arg?.status === 'string'	?	isResponseStatus(arg.status)	:	false;	
 	if(results){
-		results = arg.results.every((el:any)=>isResult(el));
+		results = arg.results.every((el:any)=>isGeocoderResult(el));
 	}	
 	return results && status;
 }

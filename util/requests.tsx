@@ -1,5 +1,6 @@
 import axios from 'axios'
 import {client,isClient} from '../util/util';
+import {GeocoderResponse,isGeocoderResponse,GeocoderResult,responseStatus} from '../util/mapTypes'
 
 
 interface orderQuery{
@@ -150,8 +151,25 @@ export async function getClients() : Promise<client[]> {
     throw e;
   }
 }
-export async function autocomplete(input:string):Promise<string>{
-  return 'a'
+export async function geocoding(input:string):Promise<GeocoderResult[]|responseStatus>{
+  try{
+    const worker = axios.create({
+			baseURL:endPoint,
+			headers:globalHeader,
+			timeout:1000
+		});
+		let params = {address:input};		
+    const {data}= await worker.get('/google/geocoding',{params});        //:{data:GeocoderResponse} 
+    
+    if(data.status==="OK" && isGeocoderResponse(data)){            
+      const predictions = data.results.map((el:any)=>(el))
+      return predictions ? predictions : ['No results were found'];
+    }else{      
+      throw new Error(data.status)
+    }		
+  }catch(e){
+    return [e.message]
+  }  
 }
 /*
 function orderQueryParser(key:string,value:Date|number){

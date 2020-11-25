@@ -6,7 +6,7 @@ type productSubClass    = 'kokedama'|'plant vase'|'succulents vase'|'accessory'|
 
 export interface ComponentWithNavigationProps extends React.ComponentPropsWithoutRef<"view">{
   navigation: NavigationProp<Record<string, object | undefined>, string, Readonly<navProp>, {}, {}>,
-  route: RouteProp<Record<string,object|undefined>,'name'>, 
+  route: RouteProp<Record<string,object|undefined>,string>,  
 }
 export type productOptions     = {
   _id?:string,
@@ -89,15 +89,7 @@ export interface customDateObj{
   minute:string
 }
 export interface client{
-  address: {
-    addressType: string
-    street: string,
-    number: number,
-    detail: string,
-    district: string,
-    town: string,
-    estate: string
-  },
+  address: address,
   phones: string[],
   doc: string,
   instagram: string,
@@ -106,6 +98,18 @@ export interface client{
   _id: string,
   name: string,
   __v: any
+}
+export interface address{    
+  street: string,
+  number: number,
+  detail: string,
+  district: string,
+  town: string,
+  state: string,
+  geometry:{
+    lat:number,
+    lng:number
+  }
 }
 
 export type day      = {date:Date,activeMonth:boolean,orders:order[]|[]}

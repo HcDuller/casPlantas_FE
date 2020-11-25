@@ -1,11 +1,12 @@
 import React from 'react';
-import {View,StyleSheet,Dimensions,Image,TouchableOpacity,Text} from 'react-native';
+import {View,StyleSheet,Dimensions,Image,TouchableOpacity,Pressable,Text} from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import {colorPalet, client, navProp} from '../util/util';
 import {ComponentWithNavigationProps} from '../util/util';
 import {getClients} from '../util/requests';
 import { AntDesign } from '@expo/vector-icons';
 import { FlatList } from 'react-native-gesture-handler';
+import { useNavigation } from '@react-navigation/native';
 
 
 
@@ -66,12 +67,14 @@ function renderCard({item}:{item:client}){
   return <ClientCard clientData={item} /> 
 }
 function ClientCard(props:ClientCardProps):JSX.Element{
-
+  const nav = useNavigation();
   return (
-    <View style={cs.card}>
+    <Pressable 
+      onPress={()=>nav.navigate('cliEdit',{client:props.clientData})}
+      style={cs.card}>
       <Text>{props.clientData.name}</Text>
       <Text>{props.clientData.address.street}</Text>
-    </View>
+    </Pressable>
   )
 }
 
