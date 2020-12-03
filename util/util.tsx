@@ -93,8 +93,8 @@ export interface client{
   phones: string[],
   doc: string,
   instagram: string,
-  anniversary: Date,
-  since: Date,
+  anniversary: Date|string,
+  since: Date|string,
   _id: string,
   name: string,
   __v: any

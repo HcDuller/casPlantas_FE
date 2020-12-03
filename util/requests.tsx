@@ -142,11 +142,39 @@ export async function getClients() : Promise<client[]> {
 		let params = {};		
     const {data} = await worker.get('/entities');    
     const clients : client[] = data.filter((el:any)=>{
-      if(isClient(el)){
+      if(isClient(el)){        
         return el;
       }
-    }).sort((a,b)=>a.name>b.name ? 1 : -1);
+    }).sort((a,b)=>a.name>b.name ? 1 : -1);    
 		return clients
+  }catch(e){
+    throw e;
+  }
+}
+export async function postClient(newClient:Partial<client>) : Promise<client[]> {
+  try{
+    const worker = axios.create({
+			baseURL:endPoint,
+			headers:globalHeader,
+			timeout:1000
+		});
+		let params = {};		
+    const {data} = await worker.post('/entities',{entity:{...newClient}});
+		return data
+  }catch(e){
+    throw e;
+  }
+}
+export async function patchClient(newClient:Partial<client>) : Promise<client[]> {
+  try{
+    const worker = axios.create({
+			baseURL:endPoint,
+			headers:globalHeader,
+			timeout:1000
+		});
+		let params = {};		
+    const {data} = await worker.patch('/entities',{entity:{...newClient}});
+		return data
   }catch(e){
     throw e;
   }
@@ -164,11 +192,12 @@ export async function geocoding(input:string):Promise<GeocoderResult[]|responseS
     if(data.status==="OK" && isGeocoderResponse(data)){            
       const predictions = data.results.map((el:any)=>(el))
       return predictions ? predictions : ['No results were found'];
-    }else{      
+    }else{  
+      console.error(`Google GeocodingApi error:${data.status}`);
       throw new Error(data.status)
     }		
   }catch(e){
-    return [e.message]
+    return []
   }  
 }
 /*

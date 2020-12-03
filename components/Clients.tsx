@@ -68,12 +68,13 @@ function renderCard({item}:{item:client}){
 }
 function ClientCard(props:ClientCardProps):JSX.Element{
   const nav = useNavigation();
+  const temp = {...props.clientData}  
   return (
     <Pressable 
       onPress={()=>nav.navigate('cliEdit',{client:props.clientData})}
       style={cs.card}>
-      <Text>{props.clientData.name}</Text>
-      <Text>{props.clientData.address.street}</Text>
+      <Text style={s.text}>{props.clientData.name}</Text>
+      <Text style={s.text}>{props.clientData.address.street}</Text>
     </Pressable>
   )
 }
@@ -81,19 +82,24 @@ function ClientCard(props:ClientCardProps):JSX.Element{
 const cs =  StyleSheet.create({
   card:{
     marginVertical:height*0.01,
-    width:'80%',
-    height:height*0.07,
-    borderRadius:15,
-    padding:5,
+    width:'80%',    
+    borderRadius:15,    
     alignSelf:'center',
-    backgroundColor:colorPalet.white
+    backgroundColor:colorPalet.white,
+    padding:15
   }
 })
-
 const s = StyleSheet.create({
   screen:{
     height:'100%',
     justifyContent:'flex-start',    
     backgroundColor:colorPalet.grey
+  },
+  text:{
+    width:'100%',    
+    fontFamily:'AlegreyaSans-Bold',
+    fontSize:height*0.023,
+    color:colorPalet.darkGrey,    
+    alignSelf:'center'
   }
 })
