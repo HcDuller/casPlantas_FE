@@ -9,7 +9,6 @@ import CleanHeader from './AuxComponents/CleanHeader';
 import {ordersGetRequest,ordersPostRequest,getClients,ordersPatchRequest} from '../util/requests'
 import NavigationRow  from './AuxComponents/NavigationRow';
 
-
 const monthNames = ["January", "February", "March", "April", "May", "June","July", "August", "September", "October", "November", "December"];
 
 const orderPurpose : {value:'maintenance'|'sale'|'shopping',text:string}[] = [
@@ -96,6 +95,9 @@ export default function NewOrder(props:any){
       throw e;
     }
   }
+  function openOrder(order:order){
+    props.navigation.navigate('editOrder',{order:order});
+  }
   
   async function saveAndGo(){
     try{
@@ -127,6 +129,7 @@ export default function NewOrder(props:any){
   },[date,loading]);  
     
   function listComponent(){
+    
     return(
       <View style={s.toDoList}>              
         <VirtualizedList           
@@ -135,7 +138,7 @@ export default function NewOrder(props:any){
           getItem={(data:Array<any> ,index:number)=>data[index]}
           getItemCount={(data)=>data.length}        
           keyExtractor={(item:any)=>item._id}
-          renderItem={({item}:any)=>(<OrderCard cWidth={windowWidth*0.7} item={item}/>)}
+          renderItem={({item}:any)=>(<OrderCard cWidth={windowWidth*0.7} item={item} editOrder={openOrder}/>)}
         />
       </View>
     )

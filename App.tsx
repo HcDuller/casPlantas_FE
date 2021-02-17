@@ -2,7 +2,8 @@ import React from 'react';
 import { Text, View, Image } from 'react-native';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { useFonts } from 'expo-font';
-import { AppLoading } from 'expo';
+import AppLoading from 'expo-app-loading'
+//import { AppLoading } from 'expo';
 import { NavigationContainer } from '@react-navigation/native';
 import { createStackNavigator,CardStyleInterpolators,StackNavigationOptions } from '@react-navigation/stack';
 import {order,client} from './util/util';

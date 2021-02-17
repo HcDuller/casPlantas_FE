@@ -179,7 +179,7 @@ export async function patchClient(newClient:Partial<client>) : Promise<client[]>
     throw e;
   }
 }
-export async function geocoding(input:string):Promise<GeocoderResult[]|responseStatus>{
+export async function geocoding(input:string):Promise<GeocoderResult[]>{
   try{
     const worker = axios.create({
 			baseURL:endPoint,

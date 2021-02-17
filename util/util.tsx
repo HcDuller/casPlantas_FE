@@ -56,7 +56,7 @@ export interface order {
       number:     number,
       district:     string,
       town?: string,
-      estate?:    string,
+      state?:    string,
     }, 
     phones: string[],
     doc?:         string,
@@ -110,6 +110,16 @@ export interface address{
     lat:number,
     lng:number
   }
+}
+export interface reserve{
+  name: string,
+  _id: string,
+  quantity: number,
+  value: number,
+  createdAt: Date,
+  lastUpdate: Date,
+  orderId: string,
+  productId: string
 }
 
 export type day      = {date:Date,activeMonth:boolean,orders:order[]|[]}

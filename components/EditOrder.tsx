@@ -1,25 +1,39 @@
 import React from 'react';
-import {View,Text,TouchableOpacity,StyleSheet,Dimensions,Image} from 'react-native';
+import {View,Text,TouchableOpacity,StyleSheet,Dimensions,Image,ScrollView} from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import {colorPalet,fonts,order,dateStringFromDate} from '../util/util';
+import {colorPalet,fonts,order,dateStringFromDate,reserve} from '../util/util';
 import CleanHeader from './AuxComponents/CleanHeader';
 import {ordersGetRequest} from '../util/requests';
 import NavigationRow from './AuxComponents/NavigationRow';
 import { Route,NavigationProp } from '@react-navigation/native';
 import { StackNavigationProp } from '@react-navigation/stack';
 
+interface ProductLineProps extends React.ComponentPropsWithoutRef<"view">{
+  reserve:reserve
+}
+function ProductLine(props:ProductLineProps):JSX.Element{
+  const{name,_id,quantity=0,value=0,createdAt,lastUpdate,orderId,productId} = props.reserve;
+  return (
+    <View style={{marginVertical:5}}>
+      <Text style={s.cardReserveHeaderText}>{name}</Text>
+      <View style={{flexDirection:'row',justifyContent:'space-between'}}>
+        <Text style={s.cardReserveHeaderText}>{`Quantidade: ${quantity}`}</Text>
+        <Text style={s.cardReserveHeaderText}>{`R$ ${value.toFixed().replace('.',',')}`}</Text>
+      </View>
+    </View>  
+  )
+}
 
 
 export default function EditOrder({route,navigation}:{route:Route<'editOrder'>,navigation:any}): JSX.Element{
-  const params = (route.params as {order:order});  
-  const [orders,setOrders]    = React.useState([]);
+  const params = (route.params as {order:order,orderId:string});  
+  
   const [order,setOrder]      = React.useState(undefined);
   const [loading,setLoading]  = React.useState(false);
 
   async function teste(){
-    try{
-      
-      const tempOrders : any = await ordersGetRequest({orderId:params?.order?._id});      
+    try{      
+      const tempOrders : any = await ordersGetRequest({orderId:params?.orderId});      
       if(tempOrders.length !== 1){
         throw new Error('Zero or multiple orders for the provided ID');
       }else{
@@ -28,13 +42,12 @@ export default function EditOrder({route,navigation}:{route:Route<'editOrder'>,n
     }catch(e){
       console.log(e);
       setOrder(undefined)
-      setOrders([])
+      
     }
   }
   
 
-  function ConditionalCard(props:{order:order|undefined}):JSX.Element{
-    
+  function ConditionalCard(props:{order:order|undefined}):JSX.Element{    
     if(props.order){
       const dtObj = dateStringFromDate(props.order.dueDate);
       const images ={
@@ -52,8 +65,8 @@ export default function EditOrder({route,navigation}:{route:Route<'editOrder'>,n
         }        
         if( props.order.clientData?.address){
           const temp = props.order.clientData.address
-          if(temp?.addressType && temp?.district && temp?.estate && temp?.street && temp?.town){
-            clientData.address = `${temp.addressType} ${temp.street},${temp.number ? temp.number : 'SN'} - ${temp.district},${temp.estate}`;
+          if(temp?.district && temp?.state && temp?.street && temp?.town){
+            clientData.address = `${temp.street},${temp.number ? temp.number : 'SN'} - ${temp.district},${temp.state}`;
           }          
         }
       }
@@ -79,8 +92,11 @@ export default function EditOrder({route,navigation}:{route:Route<'editOrder'>,n
                 <Image source={images.edit} style={s.cardReserveHeaderIcon}/>
               </View>
             </View>
-            
-          </View>     
+            <ScrollView style={{flexGrow:1}}>
+              {props.order.reserves.map((e:reserve)=><ProductLine reserve={e} key={e._id}/>)}
+            </ScrollView>                        
+          </View>
+          <View style={s.totalContainer}></View>     
         </View>
       )
     }else{
@@ -95,7 +111,7 @@ export default function EditOrder({route,navigation}:{route:Route<'editOrder'>,n
     <SafeAreaView style={s.safeArea}>
       <CleanHeader />
       <NavigationRow ohNoPress={()=>navigation.goBack()} goGoPress={()=>navigation.navigate('home')} loading={loading}/>
-      <ConditionalCard order={(order as unknown) as order}/>
+      <ConditionalCard order={(order as unknown) as order}/>      
     </SafeAreaView>
   )
 }
@@ -191,5 +207,13 @@ const s = StyleSheet.create({
     height:height*0.02,
     width:height*0.02,
     tintColor:colorPalet.darkGrey
+  },
+  totalContainer:{
+    backgroundColor:colorPalet.green,
+    height:height*0.06,
+    position:'absolute',
+    bottom:0,
+    width:'100%',
+    paddingHorizontal:width*0.05
   }
 })

@@ -17,13 +17,14 @@
       "**/*"
     ],
     "ios": {
+      "bundleIdentifier": "br.com.casplantas",      
       "supportsTablet": true
     },
     "web": {
       "favicon": "./assets/icons/logo.png"
     },
     "android": {
-      "package": "android.casplantas"
+      "package": "br.com.casplantas"
     }
   }
 }

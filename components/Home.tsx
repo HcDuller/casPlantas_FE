@@ -13,10 +13,6 @@ const screenWidth = Dimensions.get('window').width;
 
 const logoDimentions = Math.floor(screenHeight*0.1);
 
-
-
-
-
 export default function Home(props:any){  
   const [activeDate,setActiveDate]  = React.useState({date:new Date(),orders:[]});
   const [activeMonth,setActiveMonth]=React.useState(activeDate.date.getMonth() as number);
@@ -61,6 +57,9 @@ export default function Home(props:any){
       console.log(e);
     }
   }  
+  function openOrder(order:order){    
+    props.navigation.navigate('editOrder',{orderId:order._id});//order:order,
+  }
 
   React.useEffect(()=>{    
     (async()=>{      
@@ -102,7 +101,7 @@ export default function Home(props:any){
           getItem={(data,index)=>data[index]}
           getItemCount={(data)=>data.length}        
           keyExtractor={(item:any)=>item._id}
-          renderItem={({item}:any)=>(<OrderCard item={item} cWidth={screenWidth*0.7}/>)}
+          renderItem={({item}:any)=>(<OrderCard item={item} cWidth={screenWidth*0.7} editOrder={openOrder}/>)}
         />
       </View>
     </SafeAreaView>    

@@ -59,15 +59,23 @@ function MapSearchInput(props:MapSearchInputProps){
     timer.current = setTimeout(() => {
       setLoading(true);      
       geocoding(txt)
-        .then((e=>{ 
+        .then((e=>{           
           setTimeout(()=>{                        
             if((e as []).every(isGeocoderResult)){
               setResults(e as GeocoderResult[])
+            }else{
+              alert('Nenhum endereço foi encontrado.')
+              setResults([]);
             }
             setLoading(false)
           },2000)
         }))
-        .catch(e=>{setTimeout(()=>{setResults([]);setLoading(false)},2000)})
+        .catch(e=>{          
+          setTimeout(()=>{
+            console.log(e);
+            setResults([]);setLoading(false)
+          },2000)
+        })
     }, 300);
   }
   function addressRowClick(address:Partial<address>){

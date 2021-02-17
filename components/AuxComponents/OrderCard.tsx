@@ -1,11 +1,15 @@
 import React from 'react'
-import {StyleSheet,View,Text,Dimensions} from 'react-native'
+import {StyleSheet,View,Text,Dimensions,Pressable} from 'react-native'
 import {colorPalet,order} from '../../util/util';
 
 
 const screenHeight = Dimensions.get('window').height;
-
-export default function ViewOrderData(props:{item:order,cWidth:number}): JSX.Element{
+interface ViewOrderDataProps extends React.ComponentPropsWithoutRef<'view'>{
+  item:order,
+  cWidth:number,
+  editOrder?:(order:order)=>void
+}
+export default function ViewOrderData(props:ViewOrderDataProps): JSX.Element{
   const {_id,clientId,creationDate,dueDate,orderNumber,reserves,status,clientData} = props.item;
 
   const s = StyleSheet.create({
@@ -48,19 +52,23 @@ export default function ViewOrderData(props:{item:order,cWidth:number}): JSX.Ele
   let address = '';
   let address2 = '';
   if(clientData){
-    clientData.address.addressType  ? address += `${clientData.address.addressType} ` : undefined ;
-    clientData.address.street       ? address += `${clientData.address.street}, ` : undefined ;
-    clientData.address.number       ? address += `${clientData.address.number}` : undefined ;
-    clientData.address.district     ? address2 += `${clientData.address.district}, ` : undefined ;
-    clientData.address.town         ? address2 += `${clientData.address.town}, ` : undefined ;
-    clientData.address.estate       ? address2 += `${clientData.address.estate}` : undefined ;
+    clientData.address.addressType  ? address   += `${clientData.address.addressType} ` : undefined ;
+    clientData.address.street       ? address   += `${clientData.address.street}, ` : undefined ;
+    clientData.address.number       ? address   += `${clientData.address.number}` : undefined ;
+    clientData.address.district     ? address2  += `${clientData.address.district}, ` : undefined ;
+    clientData.address.town         ? address2  += `${clientData.address.town}, ` : undefined ;
+    clientData.address.state        ? address2  += `${clientData.address.state}` : undefined ;
   }
   let total = 0;
   reserves.forEach((el:any)=>{
     total+=(el.quantity*el.value);
   });
   return (
-    <View style={s.orderCard}>
+    <Pressable 
+      style={s.orderCard}
+      disabled={!props.editOrder}
+      onPress={()=>{if(props?.editOrder){props.editOrder(props.item)}}}
+    >
       <View style={f.orderCardDueTimeView}>
         <Text style={s.orderCardDieTimeText}>{`${dueDate.getHours()}:${dueDate.getMinutes()}`}</Text>
       </View>
@@ -70,6 +78,6 @@ export default function ViewOrderData(props:{item:order,cWidth:number}): JSX.Ele
         <Text style={s.orderCardDetailTextRegular}>{address2}</Text>    
         <Text style={s.orderCardDetailTextRegular}>{`R$ ${isNaN(total) ? 0 : total }`}</Text>         
       </View>      
-    </View>
+    </Pressable>
   )  
 }
