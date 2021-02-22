@@ -45,7 +45,7 @@ export interface order {
     value: number,
     createdAt: Date,
     lastUpdate: Date,
-    orderId: Date,    
+    orderId: string,    
     productId: string,
     components: product[]}[] | {}[],     
   clientData?: {
@@ -234,4 +234,46 @@ export function isClient(client:any) : client is client{
 }
 export function simpleDelay(time:number){
   return new Promise((resolve)=>{return setTimeout(resolve,time)})
+}
+export function isReserve(reserve:any): reserve is reserve{
+  const compiledValidations : boolean[] = [];  
+  reserve.hasOwnProperty('name')        ?   compiledValidations.push(typeof reserve.name        === 'string') : undefined;
+  reserve.hasOwnProperty('_id')         ?   compiledValidations.push(typeof reserve._id         === 'string') : undefined;
+  reserve.hasOwnProperty('quantity')    ?   compiledValidations.push(typeof reserve.quantity    === 'number') : undefined;
+  reserve.hasOwnProperty('value')       ?   compiledValidations.push(typeof reserve.value       === 'number') : undefined;
+  reserve.hasOwnProperty('createdAt')   ?   compiledValidations.push(Object.prototype.toString.call(reserve.createdAt) === '[object Date]') : undefined;
+  reserve.hasOwnProperty('lastUpdate')  ?   compiledValidations.push(Object.prototype.toString.call(reserve.lastUpdate) === '[object Date]') : undefined;
+  reserve.hasOwnProperty('orderId')     ?   compiledValidations.push(typeof reserve.orderId     === 'string') : undefined;
+  reserve.hasOwnProperty('productId')   ?   compiledValidations.push(typeof reserve.productId   === 'string') : undefined;  
+  return compiledValidations.every(e=>e);
+}
+export function isOrder(order:any) : order is order{
+  const compiledValidations : boolean[] = [];
+  order.hasOwnProperty('_id')           ?   compiledValidations.push(typeof order._id === 'string')           : compiledValidations.push(false);
+  order.hasOwnProperty('clientId')      ?   compiledValidations.push(typeof order.clientId === 'string')      : compiledValidations.push(false);  
+  order.hasOwnProperty('status')        ?   compiledValidations.push(typeof order.status === 'string')        : compiledValidations.push(false);
+  order.hasOwnProperty('purpose')       ?   compiledValidations.push(typeof order.purpose === 'string')       : compiledValidations.push(false);
+  order.hasOwnProperty('orderNumber')   ?   compiledValidations.push(typeof order.orderNumber === 'number')   : compiledValidations.push(false);
+
+  order.hasOwnProperty('creationDate')  ?   compiledValidations.push(Object.prototype.toString.call(order.creationDate) === '[object Date]')  : compiledValidations.push(false);
+  order.hasOwnProperty('dueDate')       ?   compiledValidations.push(Object.prototype.toString.call(order.dueDate)      === '[object Date]')  : compiledValidations.push(false);
+  
+  //validar clientData
+  if(order.hasOwnProperty('clientData')){
+    compiledValidations.push(isClient(order.clientData));
+  }else{
+    compiledValidations.push(false)
+  }
+  //validar reserves
+  if(order.hasOwnProperty('reserves')){
+    try{
+      compiledValidations.push(order.reserves.every(isReserve));
+    }catch(e){
+      compiledValidations.push(false);
+    }
+  }else{
+    compiledValidations.push(false);
+  }  
+  return compiledValidations.every(e=>e);
+   
 }

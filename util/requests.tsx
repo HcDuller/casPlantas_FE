@@ -41,7 +41,7 @@ export async function ordersGetRequest(filters?:Partial<orderQuery>){
       baseURL:endPoint,
       headers:globalHeader,
       timeout:1000            
-    })
+    })    
     const {data} = await worker.get('/order',{
       params:filters
     });
@@ -188,7 +188,7 @@ export async function geocoding(input:string):Promise<GeocoderResult[]>{
 		});
 		let params = {address:input};		
     const {data}= await worker.get('/google/geocoding',{params});        //:{data:GeocoderResponse} 
-    
+    console.log(`Is geocoderResponse? ${isGeocoderResponse(data)}`)
     if(data.status==="OK" && isGeocoderResponse(data)){            
       const predictions = data.results.map((el:any)=>(el))
       return predictions ? predictions : ['No results were found'];

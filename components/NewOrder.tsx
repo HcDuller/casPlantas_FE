@@ -116,7 +116,7 @@ export default function NewOrder(props:any){
       await simpleDelay(2000);
       setLoading(false);
       setOrder(response);
-      props.navigation.navigate('editOrder',{order:response});
+      props.navigation.navigate('editOrder',{orderId:response._id});
     }catch(e){
       console.log(e)
     }

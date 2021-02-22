@@ -1,7 +1,7 @@
 import React from 'react';
 import {View,Text,TouchableOpacity,StyleSheet,Dimensions,Image,ScrollView} from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import {colorPalet,fonts,order,dateStringFromDate,reserve} from '../util/util';
+import {colorPalet,fonts,order,dateStringFromDate,reserve,isOrder,isReserve} from '../util/util';
 import CleanHeader from './AuxComponents/CleanHeader';
 import {ordersGetRequest} from '../util/requests';
 import NavigationRow from './AuxComponents/NavigationRow';
@@ -31,25 +31,28 @@ export default function EditOrder({route,navigation}:{route:Route<'editOrder'>,n
   const [order,setOrder]      = React.useState(undefined);
   const [loading,setLoading]  = React.useState(false);
 
-  async function teste(){
+  async function getOrderData(){
     try{      
       const tempOrders : any = await ordersGetRequest({orderId:params?.orderId});      
-      if(tempOrders.length !== 1){
+      if(tempOrders.length !== 1){        
         throw new Error('Zero or multiple orders for the provided ID');
       }else{
         setOrder(tempOrders[0]);
       }      
     }catch(e){
       console.log(e);
-      setOrder(undefined)
-      
+      setOrder(undefined)      
     }
   }
   
-
   function ConditionalCard(props:{order:order|undefined}):JSX.Element{    
-    if(props.order){
-      const dtObj = dateStringFromDate(props.order.dueDate);
+    if(props.order && isOrder(props.order)){
+      const order = props.order;
+      const reserves : reserve[] = [];
+      if(order.reserves.every(isReserve)){
+        
+      }
+      const dtObj = dateStringFromDate(order.dueDate);
       const images ={
         edit:require('../assets/icons/Edit.png'),
         add:require('../assets/icons/Plus.png')
@@ -58,13 +61,13 @@ export default function EditOrder({route,navigation}:{route:Route<'editOrder'>,n
         name:'Undefined Client',
         address:''
       };
-      if(props.order.clientData){
+      if(order.clientData){
         clientData = {
-          name:`${props.order.clientData.name}`,
+          name:`${order.clientData.name}`,
           address: `No address was found.`
         }        
-        if( props.order.clientData?.address){
-          const temp = props.order.clientData.address
+        if( order.clientData?.address){
+          const temp = order.clientData.address
           if(temp?.district && temp?.state && temp?.street && temp?.town){
             clientData.address = `${temp.street},${temp.number ? temp.number : 'SN'} - ${temp.district},${temp.state}`;
           }          
@@ -86,14 +89,15 @@ export default function EditOrder({route,navigation}:{route:Route<'editOrder'>,n
           </View>             
           <View style={s.cardReserveContaner}>
             <View style={s.cardReserveHeaderContainer}>
-              <Text style={s.cardReserveHeaderText}>Pedido #{props.order.orderNumber}</Text>
+              <Text style={s.cardReserveHeaderText}>Pedido #{order.orderNumber}</Text>
               <View style={s.cardReserveHeaderIconContainer}>
                 <Image source={images.add} style={s.cardReserveHeaderIcon}/>
                 <Image source={images.edit} style={s.cardReserveHeaderIcon}/>
               </View>
             </View>
             <ScrollView style={{flexGrow:1}}>
-              {props.order.reserves.map((e:reserve)=><ProductLine reserve={e} key={e._id}/>)}
+              {/*order.reserves.map((e:reserve)=><ProductLine reserve={e} key={e._id}/>)*/}
+              {order.reserves.map((e:any)=>{isReserve(e) ? <ProductLine reserve={e} key={e._id}/> : undefined})}
             </ScrollView>                        
           </View>
           <View style={s.totalContainer}></View>     
@@ -104,8 +108,9 @@ export default function EditOrder({route,navigation}:{route:Route<'editOrder'>,n
     }
     
   }
+
   React.useEffect(()=>{
-    teste()
+    getOrderData()
   },[])
   return (
     <SafeAreaView style={s.safeArea}>
