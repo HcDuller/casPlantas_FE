@@ -64,7 +64,11 @@ export function isGeocoderResult(arg:any):arg is GeocoderResult{
 	const types 							=	arg?.types.every((e:string)=>typeList.findIndex(el=>e===el)>-1) ? true : false;	
 	const formatted_address 	=	arg?.formatted_address ? true : false;			
 	const address_components 	= arg?.address_components.every((e:any)=>typeof e === 'object');			
-	const geometry						= arg?.geometry.location && arg.geometry.location_type && arg.geometry.viewport && arg.geometry.bounds;						
+	const geometry						= arg?.geometry.location && arg.geometry.location_type && arg.geometry.viewport && arg.geometry.bounds;				
+	console.log(`types : ${types}`)		
+	console.log(`formatted_address : ${formatted_address}`)		
+	console.log(`address_components : ${address_components}`)		
+	console.log(`geometry : ${geometry}`)			
 	return types && formatted_address && address_components && geometry;
 }
 export function isResponseStatus(arg:string){

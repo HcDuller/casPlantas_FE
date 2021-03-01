@@ -61,7 +61,7 @@ function MapSearchInput(props:MapSearchInputProps){
       geocoding(txt)
         .then((e=>{           
           setTimeout(()=>{                        
-            if((e as []).every(isGeocoderResult)){
+            if(true/*(e as []).every(isGeocoderResult) */){
               setResults(e as GeocoderResult[])
             }else{
               alert('Nenhum endereço foi encontrado.')

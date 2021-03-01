@@ -4,6 +4,7 @@ import {TextInputChangeEventData,TextInputSubmitEditingEventData} from 'react-na
 import CentralCiclingContainer from './AuxComponents/CentralCiclingContainer';
 import {client,colorPalet,fonts,address,ComponentWithNavigationProps}  from '../util/util';
 import AddressComponent from './AuxComponents/AddressComponent';
+import AutocompleteInput from './AuxComponents/AutocompleteInput';
 import {postClient,patchClient} from '../util/requests';
 import {  SafeAreaView,useSafeAreaInsets }    from 'react-native-safe-area-context';
 import DateTimePicker, { Event } from '@react-native-community/datetimepicker';
@@ -103,7 +104,7 @@ export default function EditClient(props:EditClientProps) :  JSX.Element {
         delete temp.__v;
         await postClient(temp);
       }      
-      const fakeDelay = new Promise((resolve,reject)=>{
+      const fakeDelay:Promise<void> = new Promise((resolve,reject)=>{
         setTimeout(() => {resolve()}, 1200);
       })
       await fakeDelay;      
@@ -140,9 +141,10 @@ export default function EditClient(props:EditClientProps) :  JSX.Element {
           <AnniversaryComponent value={new Date(client.anniversary)} hocUpdater={(newDate:Date)=>{const temp = {...client};temp.anniversary = newDate;setClient(temp)}}/>
           <CentralCiclingContainer contentDisposition='center' content={<ProxyTextInput value={client.instagram} placeholder='Instagram' valueChanger={setInstagram}/>}/>        
           <CentralCiclingContainer contentDisposition='center' content={client.phones.map((el:string,index:number)=><ProxyPhoneInput key={`PhoneNumber-${index}`} value={client.phones[index]} placeholder='(xx)00000-0000' valueChanger={(txt:string)=>{setPhone(txt,index)}}/>)}/>        
-          <AddressComponent address={client.address} hocUpdater={setAddress}/> 
-          <View style={{height:'50%',width:1}}/>        
-        </ScrollView>
+          {/*<AddressComponent address={client.address} hocUpdater={setAddress}/>*/}          
+          <AutocompleteInput/>
+          {/*<View style={{height:'50%',width:1}}/>         */}
+        </ScrollView>        
       </KeyboardAvoidingView>
     </SafeAreaView>          
   )

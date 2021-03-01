@@ -1,4 +1,4 @@
-import axios from 'axios'
+import axios, { AxiosResponse, AxiosTransformer } from 'axios'
 import {client,isClient} from '../util/util';
 import {GeocoderResponse,isGeocoderResponse,GeocoderResult,responseStatus} from '../util/mapTypes'
 
@@ -187,9 +187,9 @@ export async function geocoding(input:string):Promise<GeocoderResult[]>{
 			timeout:1000
 		});
 		let params = {address:input};		
-    const {data}= await worker.get('/google/geocoding',{params});        //:{data:GeocoderResponse} 
-    console.log(`Is geocoderResponse? ${isGeocoderResponse(data)}`)
-    if(data.status==="OK" && isGeocoderResponse(data)){            
+    const {data} = await worker.get('/google/geocoding',{params});        //:{data:GeocoderResponse}     
+    //console.log(`Is geocoderResponse? ${isGeocoderResponse(data)}`) && isGeocoderResponse(data)
+    if(data.status==="OK" ){            
       const predictions = data.results.map((el:any)=>(el))
       return predictions ? predictions : ['No results were found'];
     }else{  
@@ -197,6 +197,25 @@ export async function geocoding(input:string):Promise<GeocoderResult[]>{
       throw new Error(data.status)
     }		
   }catch(e){
+    return []
+  }  
+}
+export async function autocomplete(input:string):Promise<any>{
+  try{
+    const worker = axios.create({
+			baseURL:endPoint,
+			headers:globalHeader,
+			timeout:1000
+		});
+		let params = {input:input};		
+    const response : AxiosResponse = await worker.get('/google/autocomplete',{params});        //:{data:GeocoderResponse}     
+    
+    if(response.data.status === "OK"){
+      return response.data.predictions;
+    }else{      
+      throw new Error('Status is not OK')
+    }    
+  }catch(e){    
     return []
   }  
 }
