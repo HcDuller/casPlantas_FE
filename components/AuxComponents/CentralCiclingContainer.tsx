@@ -54,9 +54,9 @@ export default function CentralCiclingContainer(
     title:{
       fontFamily:'AlegreyaSans-Bold',
       fontSize:windowHeight*0.023,
-      color:colorPalet.darkGrey,
+      color:colorPalet.darkGrey,      
       textAlign:'center',
-      alignSelf:'center'
+      alignSelf:'center',      
     }
   
   })
@@ -79,6 +79,11 @@ export default function CentralCiclingContainer(
         <Image source={images.rightArrow} style={s.centralContainerIcons} />
       </TouchableOpacity>
   )
+  const centralConditionalComponent = props.onCenterPress ? (
+    <TouchableOpacity style={s.centralContainerComponents} onPress={centerPress}>
+      {centralComponent}
+    </TouchableOpacity>  
+  ) : (<View style={s.centralContainerComponents}>{centralComponent}</View>)
   
   const conditionalLeftArrowComponent = props.onLeftPress ? leftComponent : undefined;
   const conditionalRightArrowComponent = props.onRightPress ? rightComponent : undefined;
@@ -88,9 +93,7 @@ export default function CentralCiclingContainer(
       {headerComponent}
       <View style={s.cicleContainer}>              
         {conditionalLeftArrowComponent}
-        <TouchableOpacity style={s.centralContainerComponents} onPress={centerPress}>
-          {centralComponent}
-        </TouchableOpacity>  
+        {centralConditionalComponent}
         {conditionalRightArrowComponent}
       </View>
     </KeyboardAvoidingView>

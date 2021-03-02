@@ -72,7 +72,7 @@ export default function EditClient(props:EditClientProps) :  JSX.Element {
   }
   function setPhone(txt:string,index:number){
     const temp  = {...client};
-    temp.phones[index] = txt;
+    temp.phones[index] = txt;    
     setClient(temp);
   }
   function setAddress(newAddress:Partial<address>):void{
@@ -142,7 +142,8 @@ export default function EditClient(props:EditClientProps) :  JSX.Element {
           <CentralCiclingContainer contentDisposition='center' content={<ProxyTextInput value={client.instagram} placeholder='Instagram' valueChanger={setInstagram}/>}/>        
           <CentralCiclingContainer contentDisposition='center' content={client.phones.map((el:string,index:number)=><ProxyPhoneInput key={`PhoneNumber-${index}`} value={client.phones[index]} placeholder='(xx)00000-0000' valueChanger={(txt:string)=>{setPhone(txt,index)}}/>)}/>        
           {/*<AddressComponent address={client.address} hocUpdater={setAddress}/>*/}          
-          <AutocompleteInput/>
+          <AutocompleteInput hocUpdater={setAddress}/>
+          <CentralCiclingContainer contentDisposition='center' content={`${client.address.street}, ${client.address.number}`}/>
           {/*<View style={{height:'50%',width:1}}/>         */}
         </ScrollView>        
       </KeyboardAvoidingView>

@@ -219,6 +219,24 @@ export async function autocomplete(input:string):Promise<any>{
     return []
   }  
 }
+export async function placeDetails(input:string):Promise<any>{
+  try{
+    const worker = axios.create({
+			baseURL:endPoint,
+			headers:globalHeader,
+			timeout:1000
+		});
+		let params = {place_id:input};		
+    const response : AxiosResponse = await worker.get('/google/placeDetails',{params});        //:{data:GeocoderResponse}         
+    if(response.data.status === "OK"){      
+      return response.data;
+    }else{      
+      throw new Error('Status is not OK')
+    }    
+  }catch(e){    
+    return []
+  }  
+}
 /*
 function orderQueryParser(key:string,value:Date|number){
   if(key === 'minFromDate' ||  key === 'maxFromDate' ||  key === 'minDueDate' ||  key === 'maxDueDate'){
