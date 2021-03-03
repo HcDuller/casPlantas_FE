@@ -106,6 +106,7 @@ export interface address{
   district: string,
   town: string,
   state: string,
+  place_id: string,
   geometry:{
     lat:number,
     lng:number

@@ -83,6 +83,7 @@ export default function EditClient(props:EditClientProps) :  JSX.Element {
     newAddress?.district  ? temp.address.district = newAddress.district : undefined;
     newAddress?.town      ? temp.address.town     = newAddress.town     : undefined;
     newAddress?.state     ? temp.address.state    = newAddress.state    : undefined;
+    newAddress?.place_id  ? temp.address.place_id = newAddress.place_id : undefined;
     newAddress?.geometry  ? temp.address.geometry = newAddress.geometry : undefined;
     setClient(temp);    
   }  
@@ -140,11 +141,8 @@ export default function EditClient(props:EditClientProps) :  JSX.Element {
           <CentralCiclingContainer contentDisposition='center' content={<ProxyTextInput value={client.name} placeholder='Nome' valueChanger={setName}/>}/>        
           <AnniversaryComponent value={new Date(client.anniversary)} hocUpdater={(newDate:Date)=>{const temp = {...client};temp.anniversary = newDate;setClient(temp)}}/>
           <CentralCiclingContainer contentDisposition='center' content={<ProxyTextInput value={client.instagram} placeholder='Instagram' valueChanger={setInstagram}/>}/>        
-          <CentralCiclingContainer contentDisposition='center' content={client.phones.map((el:string,index:number)=><ProxyPhoneInput key={`PhoneNumber-${index}`} value={client.phones[index]} placeholder='(xx)00000-0000' valueChanger={(txt:string)=>{setPhone(txt,index)}}/>)}/>        
-          {/*<AddressComponent address={client.address} hocUpdater={setAddress}/>*/}          
-          <AutocompleteInput hocUpdater={setAddress}/>
-          <CentralCiclingContainer contentDisposition='center' content={`${client.address.street}, ${client.address.number}`}/>
-          {/*<View style={{height:'50%',width:1}}/>         */}
+          <CentralCiclingContainer contentDisposition='center' content={client.phones.map((el:string,index:number)=><ProxyPhoneInput key={`PhoneNumber-${index}`} value={client.phones[index]} placeholder='(xx)00000-0000' valueChanger={(txt:string)=>{setPhone(txt,index)}}/>)}/>                            
+          <AddressComponent address={client.address} hocUpdater={setAddress}/>
         </ScrollView>        
       </KeyboardAvoidingView>
     </SafeAreaView>          

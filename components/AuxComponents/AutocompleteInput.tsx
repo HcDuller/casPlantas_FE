@@ -8,7 +8,8 @@ const {height,width}  = Dimensions.get('window');
 const strings = ['MKwcx2gKNVW5yqH','PSGKNW7C3OscXYf','CQ50hAETZom38WP','4GRzyS0QCjC4d84','HuMWDpnCCxr5I8d','FlVQVYVw6n9Ytli','LAagxqkJOlISk7z','oNFkzmc8LGHj97P','1Vyd0YtkM71l8cS','ErBnOHeLccwji04','lwAHqzQHPu9lFeV','h2Y70vdWzhhH9rP','BrMrUVKbcnsJJfr','sTkuixpXjxKndMw','ObtxESLtu76HFJ2','87QYUcgZp3JrouH','GgZaDpHV7gnBfss','fw6LtlDVAaV0QIt','4oP5tF6Qu0S4V75','uK1FTcYTzwcfvG3','7nsHfmrENcemuzz','DLzNN9BNJe82Ima','HBdalBHeIMbzcvv','bSVoMLIIF3Gypwr','eZEf4cqv2oRSKGO','i5iVyNsZHCckPDA','z9wbVwW9i49bO2g','VPiVjLI5tWLIQiT','gfbsemeT4KSRasZ','CGwAM7Ga7u1JZxI','uZP7GQNU5vVyNYz','MLABT7tlJfeF6Hx','mJhLEsKCmb72sFN','PGzuKLnaaHXQwAW','UnRzltER0JH8dEw','D7NwoX50lY645Cs','2ZLQ9agv2BtMwVp','xKgcuOvjOJJkaey','fY37IVVBprtssZS','vsyF8gmQsQGQgUS','I74mDwTE0LKoX1h','LEGKzqRiVaaOCRG','MBxwsrqYLCc3KuB','Wmy5THNTCZ1ZKL8','1vBfxVIDHYSrppc','TR1V7JFvrR9U2xj','KXYtxIpE3LPD59Z','d2IYELGMp9a2iOf','0YbQTQrCwuSSOuB','F997geMJ8w876QN'].map((e,i)=>{return{title:e,id:`${i}`}});
 
 interface AutocompleteInput extends React.ComponentPropsWithoutRef<"ul">{
-  hocUpdater:(a:address)=>void
+  hocUpdater:(a:address)=>void,
+  address?: address
 }
 
 type MergeElementProps<
@@ -79,7 +80,8 @@ export default function AutocompletInput(props:AutocompleteInput) : JSX.Element 
             district: results[0].address_components.find((e:any)=>e.types.includes("sublocality_level_1")).long_name,
             town:     results[0].address_components.find((e:any)=>e.types.includes("administrative_area_level_2")).long_name,
             state:    results[0].address_components.find((e:any)=>e.types.includes("administrative_area_level_1")).long_name,                           
-            geometry: results[0].geometry.location,                                 
+            geometry: results[0].geometry.location,             
+            place_id: predictions[0].place_id,                
             detail:   '',
           }
           props.hocUpdater(placeAddress);
@@ -89,13 +91,10 @@ export default function AutocompletInput(props:AutocompleteInput) : JSX.Element 
       }
     })()
   }
-  function resultset() : {title:string,id:string}[]{    
-    return resultSet.map((e)=>{return {title:e.description,id:e.place_id}})
-  }
-
+ 
   return (
     <KeyboardAvoidingView style={s.centralContainer}>
-      <TextInput value={InputSearch} onChangeText={changeFilter} style={s.addressQuery} ref={inputRef} onSubmitEditing={({nativeEvent: {text}})=>submition(text)}/>      
+      <TextInput value={InputSearch} onChangeText={changeFilter} style={s.addressQuery} ref={inputRef} onSubmitEditing={({nativeEvent: {text}})=>{submition(text);setResultSet([])}}/>      
       <List predictions={resultSet} hocUpdater={replaceSearch}/>      
     </KeyboardAvoidingView>
   )
