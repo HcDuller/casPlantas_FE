@@ -214,17 +214,17 @@ function  AnniversaryComponent(props:AnniversaryComponentProps){
   };  
   React.useEffect(()=>{
     const dateNow = new Date();
-    const tempDate = new Date(props.value)
+    const tempDate = new Date(props.value)    
     if(
-      (new Date(`${tempDate.getMonth()+1}/${tempDate.getDate()}/${tempDate.getFullYear()}`)).valueOf()
+      (new Date(`${tempDate.getMonth()+1}/${tempDate.getDate()}/2000`)).valueOf()
       ===
-      (new Date(`${dateNow.getMonth()+1}/${dateNow.getDate()}/${dateNow.getFullYear()}`)).valueOf()
+      (new Date(`${dateNow.getMonth()+1}/${dateNow.getDate()}/2000`)).valueOf()
     ){
       twinkle.start()
     }        
   },[props.value])
   return (
-    <View style={{minHeight:height*0.05+8,backgroundColor:colorPalet.white,borderRadius:10,width:'80%',flexDirection:'row',justifyContent:'center',paddingHorizontal:15,paddingVertical:4}}>
+    <KeyboardAvoidingView style={s.AnniversaryStyle}>
       {openPicker ? (
         <DateTimePicker
           testID="datePicker"
@@ -239,17 +239,17 @@ function  AnniversaryComponent(props:AnniversaryComponentProps){
       ) : undefined}  
       <Pressable 
         onPress={()=>{setOpenPicker(true)}}
-        style={{backgroundColor:colorPalet.white,borderRadius:10,width:'100%',flexDirection:'row',justifyContent:'center',alignItems:'center'}}
+        style={{backgroundColor:colorPalet.white,borderRadius:10,width:'100%',flexDirection:'row',justifyContent:'center',alignItems:'center',marginVertical:height*0.01,marginHorizontal:width*0.1}}
       >                
         <Text 
           style={[{overflow:'visible',flexWrap:undefined},s.TextInputStyle]}
           numberOfLines={1}                      
-        >{textLine}
-        </Text>          
-        
-        <Animated.Image source={images.cake} style={{height:height*0.05,width:height*0.05,position:'absolute',top:0,right:0,tintColor:cakeColor}}/>
+          >{textLine}
+        </Text>                  
+        <Animated.Image source={images.cake} style={{height:height*0.04,width:height*0.04,position:'absolute',top:-height*0.005,right:0,tintColor:cakeColor,zIndex:100}}/>
       </Pressable>
-    </View>
+      
+    </KeyboardAvoidingView>
   )
 }
 const s = StyleSheet.create({
@@ -258,8 +258,7 @@ const s = StyleSheet.create({
     justifyContent:'flex-start',    
     alignItems:'center',
     backgroundColor:colorPalet.grey,    
-  },
-  
+  },  
   title:{    
     fontFamily:fonts.bold,
     color:colorPalet.darkGrey,
@@ -272,5 +271,17 @@ const s = StyleSheet.create({
     color:colorPalet.darkGrey,
     textAlign:'center',
     alignSelf:'center'
+  },
+  AnniversaryStyle:{
+    width:width*0.8,
+    justifyContent:'center',
+    flexDirection:'row',
+    borderRadius:10,
+    minHeight:height*0.05+8,
+    backgroundColor:colorPalet.white,
+    marginVertical:height*0.01,
+    marginHorizontal:width*0.1,            
+    paddingHorizontal:15,
+    paddingVertical:4
   }
 })

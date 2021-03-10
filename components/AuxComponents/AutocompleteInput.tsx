@@ -1,6 +1,6 @@
 import React from 'react';
 import {} from 'react-native';
-import {Dimensions,StyleSheet,Text,View,TextInput,TouchableHighlight,KeyboardAvoidingView} from 'react-native';
+import {Dimensions,StyleSheet,Text,View,TextInput,TouchableHighlight,KeyboardAvoidingView, BackHandler} from 'react-native';
 import {fonts,colorPalet,address} from '../../util/util';
 import {autocomplete,placeDetails} from '../../util/requests'
 
@@ -9,6 +9,7 @@ const strings = ['MKwcx2gKNVW5yqH','PSGKNW7C3OscXYf','CQ50hAETZom38WP','4GRzyS0Q
 
 interface AutocompleteInput extends React.ComponentPropsWithoutRef<"ul">{
   hocUpdater:(a:address)=>void,
+  closeEditing:()=>void,
   address?: address
 }
 
@@ -85,16 +86,31 @@ export default function AutocompletInput(props:AutocompleteInput) : JSX.Element 
             detail:   '',
           }
           props.hocUpdater(placeAddress);
+        }else{
+          props.closeEditing();
         }        
       }catch(e){
         console.log(e);
       }
     })()
   }
- 
+  React.useEffect(()=>{
+    // @ts-ignore 
+    inputRef.current.focus();
+    const bkHandler = ()=>{props.closeEditing();return true}
+    BackHandler.addEventListener('hardwareBackPress',bkHandler);
+    return ()=>{BackHandler.removeEventListener('hardwareBackPress',bkHandler);}
+  },[])  
   return (
     <KeyboardAvoidingView style={s.centralContainer}>
-      <TextInput value={InputSearch} onChangeText={changeFilter} style={s.addressQuery} ref={inputRef} onSubmitEditing={({nativeEvent: {text}})=>{submition(text);setResultSet([])}}/>      
+      <TextInput 
+        value={InputSearch} 
+        onChangeText={changeFilter} 
+        style={s.addressQuery} 
+        ref={inputRef} 
+        placeholder='Endereço'
+        onBlur={()=>{resultSet.length !== 0 ? undefined : props.closeEditing()}}
+        onSubmitEditing={({nativeEvent: {text}})=>{submition(text);setResultSet([])}}/>      
       <List predictions={resultSet} hocUpdater={replaceSearch}/>      
     </KeyboardAvoidingView>
   )

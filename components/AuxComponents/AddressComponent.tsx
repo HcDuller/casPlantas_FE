@@ -1,8 +1,10 @@
 import React from 'react';
-import {View,StyleSheet} from 'react-native';
+import {View,StyleSheet,Text,Dimensions,Image} from 'react-native';
 import AutocompleteInput from './AutocompleteInput';
 import CentralCiclingContainer from './CentralCiclingContainer';
 import {colorPalet,fonts,address} from '../../util/util';
+
+const {height,width}  = Dimensions.get('window');
 
 type ExtendedComponent<
   P extends React.ElementType,
@@ -25,8 +27,21 @@ export default function AddressComponent(props:AddressComponentProps){
       alert('Endereco deu PAU!')
     }
   }
-  const simple  = <CentralCiclingContainer content={`${props.address.street}, ${props.address.number} - ${props.address.town}`} onCenterPress={()=>{setEditing(true)}}/>;
-  const editing = <AutocompleteInput hocUpdater={backToDisplay}/>
+  const AddressF = ()=><Text style={[s.addressDefaults,s.addressF]}>{`${props.address.street}, ${props.address.number}`}</Text>
+  const AddressS = ()=><Text style={[s.addressDefaults,s.addressS]}>{`${props.address.district}`}</Text>
+  const AddressT = ()=><Text style={[s.addressDefaults,s.addressS]}>{`${props.address.town}`}</Text>
+  const AddressWrapper = () => (
+    <View style={{flexDirection:'row'}}>
+      <Image source={require('../../assets/icons/pin.png')} style={{height:height*0.05,width:height*0.05,alignSelf:'center',marginHorizontal:width*0.06,tintColor:colorPalet.darkGrey}}/>
+      <View>
+        <AddressF/>
+        <AddressS/>
+        <AddressT/>
+      </View>
+    </View>
+  )
+  const simple  = <CentralCiclingContainer content={<AddressWrapper />} onCenterPress={()=>{setEditing(true)}}/>;
+  const editing = <AutocompleteInput hocUpdater={backToDisplay} closeEditing={()=>setEditing(false)}/>
 
 
   return (
@@ -37,5 +52,19 @@ export default function AddressComponent(props:AddressComponentProps){
 }
 
 const s = StyleSheet.create({
-
+  addressDefaults:{       
+    width:'100%',
+    textAlign:'left',
+    alignSelf:'center', 
+  },
+  addressF:{
+    fontFamily:fonts.regular,
+    fontSize:height*0.023,
+    color:colorPalet.darkGrey,   
+  },
+  addressS:{
+    fontFamily:fonts.regular,
+    fontSize:height*0.018,
+    color:colorPalet.darkGrey,   
+  }
 })

@@ -41,10 +41,9 @@ export default function CentralCiclingContainer(
     },
     centralContainerComponents:{
       alignContent:'center',
-      justifyContent:'center',
-      //minWidth:windowWidth*0.25,
-      flexGrow:1,
-      height:windowHeight*0.06
+      justifyContent:'center',            
+      minHeight:windowHeight*0.06,
+      flexGrow:1
     },
     centralContainerIcons:{    
       alignSelf:'center',    
