@@ -99,7 +99,7 @@ export default function EditClient(props:EditClientProps) :  JSX.Element {
       const temp : Partial<client> = {...client}      
       setLoading(true);
       if( params?.client){
-        await patchClient(temp)
+        await patchClient(temp);
       }else{
         delete temp._id;
         delete temp.__v;
@@ -180,10 +180,26 @@ function  ProxyPhoneInput(props:ProxyPhoneInputProps){
   function hocUpdater({ nativeEvent: { text} }:{nativeEvent:TextInputSubmitEditingEventData}){
     props.valueChanger(text);
   }
+
+  const style = StyleSheet.create({
+    inputStyle:{
+      width:'100%',          
+      fontSize:height*0.023,
+      color:colorPalet.darkGrey,
+      textAlign:'center',
+      alignSelf:'center'
+    },
+    regular:{
+      fontFamily:fonts.regular,
+    },
+    bold:{
+      fontFamily:fonts.bold,
+    }
+  })
   return (
     <TextInput 
-      style={s.TextInputStyle}
-      keyboardType='number-pad'
+      style={[style.inputStyle,style.regular]}
+      keyboardType='phone-pad'
       value={innerValue}
       onChange={localChanger}      
       placeholder={props.placeholder}
@@ -266,12 +282,20 @@ const s = StyleSheet.create({
   },  
   TextInputStyle:{
     width:'100%',    
-    fontFamily:'AlegreyaSans-Bold',
+    fontFamily:fonts.bold,
     fontSize:height*0.023,
     color:colorPalet.darkGrey,
     textAlign:'center',
     alignSelf:'center'
-  },
+  },  
+  TextInputPlaceholder:{
+    width:'100%',    
+    fontFamily:fonts.regular,
+    fontSize:height*0.023,
+    color:colorPalet.darkGrey,
+    textAlign:'center',
+    alignSelf:'center'
+  },  
   AnniversaryStyle:{
     width:width*0.8,
     justifyContent:'center',

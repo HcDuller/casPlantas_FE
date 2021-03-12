@@ -24,7 +24,7 @@ export default function ProductOptions(props:ProdOptProps): JSX.Element{
   function pressableStyle({pressed}:{pressed:boolean}) {
     const fs = StyleSheet.create({
       pressable:{
-        backgroundColor:colorPalet.green,
+        backgroundColor:colorPalet.darkGreen,
         opacity: instantPressed ? 0.5 : 1,
         height:height*0.04,
         width:width*0.7,

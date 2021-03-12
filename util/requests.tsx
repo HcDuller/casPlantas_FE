@@ -173,7 +173,9 @@ export async function patchClient(newClient:Partial<client>) : Promise<client[]>
 			timeout:1000
 		});
 		let params = {};		
-    const {data} = await worker.patch('/entities',{entity:{...newClient}});
+    const result = await worker.patch('/entities',{entity:{...newClient}});
+    const {data} = result
+    console.log(result.status);
 		return data
   }catch(e){
     throw e;

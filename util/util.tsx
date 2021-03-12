@@ -164,11 +164,11 @@ export const colorPalet= {
   purple:     '#7b74ad',
   white:      '#ffffff',
   red:        '#af132d',
-  green:      '#c7dab0',  
-  grey:       '#edeef0',
+  green:      '#c7dab0', 
+  grey:       '#e7e8e4',
   orange:     '#de9f00',  
   darkGrey:   '#5b5a5d',  
-  darkGreen : '#8eb878',
+  darkGreen : '#617961',
   darkOrange: '#f8e0cc',  
 }
 export const rgbColorPallet = {
@@ -176,9 +176,9 @@ export const rgbColorPallet = {
   white:      'rgb(255,255,255)',
   red:        'rgb(175,19,45)',
   green:      'rgb(199,218,176)',  
-  grey:       'rgb(237,238,240)',
+  grey:       'rgb(231,232,228)',
   orange:     'rgb(222,159,0)',  
-  darkGrey:   'rgb(91,90,93)',  
+  darkGrey:   'rgb(97,121,97)',  
   darkGreen : 'rgb(142,184,120)',
   darkOrange: 'rgb(248,224,204)',
 }
