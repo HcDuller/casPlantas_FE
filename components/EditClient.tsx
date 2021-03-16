@@ -1,10 +1,10 @@
 import React from 'react';
-import {Animated,View,Dimensions,Text,StyleSheet,TextInput,ScrollView,Platform,Pressable,KeyboardAvoidingView} from 'react-native';
+import {Animated,View,Dimensions,Text,StyleSheet,TextInput,ScrollView,Platform,Pressable,KeyboardAvoidingView, Image,TouchableHighlight} from 'react-native';
 import {TextInputChangeEventData,TextInputSubmitEditingEventData} from 'react-native';
 import CentralCiclingContainer from './AuxComponents/CentralCiclingContainer';
-import {client,colorPalet,fonts,address,ComponentWithNavigationProps}  from '../util/util';
+import {client,colorPalet,fonts,address,ComponentWithNavigationProps, rgbColorPallet}  from '../util/util';
 import AddressComponent from './AuxComponents/AddressComponent';
-import AutocompleteInput from './AuxComponents/AutocompleteInput';
+import MaskedTextInput from './AuxComponents/MaskedTextInput';
 import {postClient,patchClient} from '../util/requests';
 import {  SafeAreaView,useSafeAreaInsets }    from 'react-native-safe-area-context';
 import DateTimePicker, { Event } from '@react-native-community/datetimepicker';
@@ -28,7 +28,8 @@ interface AnniversaryComponentProps extends React.ComponentPropsWithoutRef<"view
 
 const {height,width}  = Dimensions.get('window');
 const images  = {
-  cake: require('../assets/icons/Bolo.png')
+  cake: require('../assets/icons/Bolo.png'),
+  plus: require('../assets/icons/Plus.png')
 }
 export default function EditClient(props:EditClientProps) :  JSX.Element {  
   const newClient : client  = {
@@ -75,6 +76,11 @@ export default function EditClient(props:EditClientProps) :  JSX.Element {
     temp.phones[index] = txt;    
     setClient(temp);
   }
+  function addPhone(){
+    const temp = {...client};
+    temp.phones.push('');
+    setClient(temp);
+  }
   function setAddress(newAddress:Partial<address>):void{
     const temp = {...client};    
     newAddress?.street    ? temp.address.street   = newAddress.street   : undefined;
@@ -116,7 +122,26 @@ export default function EditClient(props:EditClientProps) :  JSX.Element {
       console.error(e.message);
     }
   }
- 
+
+  const AddPhone : JSX.Element = (
+    <View>
+      <TouchableHighlight underlayColor={colorPalet.green} onPress={addPhone} style={{position:'absolute'}}>
+        <Image source={images.plus} style={{height:height*0.02,width:height*0.02,margin:height*0.015}}/>
+      </TouchableHighlight>
+    </View>
+  )
+  const Phones : JSX.Element = (
+    <View>      
+      {client.phones.map((el:string,index:number,arr:string[])=>(
+        <View style={{flexDirection:'row',alignSelf:'center'}}>
+          <MaskedTextInput key={`PhoneNumber-${index}`} value={client.phones[index]} hocUpdater={(txt:string)=>setPhone(txt,index)} mask='phone' style={s.phoneStyle}/>
+          {index+1 === arr.length ? AddPhone : undefined}
+          
+        </View>
+        ))}
+      
+    </View>
+  )
   return (    
     <SafeAreaView style={s.screen}>      
     <View style={{width:'80%',height:height*0.1,alignItems:'center',marginVertical:height*0.02}}>        
@@ -141,14 +166,17 @@ export default function EditClient(props:EditClientProps) :  JSX.Element {
           <CentralCiclingContainer contentDisposition='center' content={<ProxyTextInput value={client.name} placeholder='Nome' valueChanger={setName}/>}/>        
           <AnniversaryComponent value={new Date(client.anniversary)} hocUpdater={(newDate:Date)=>{const temp = {...client};temp.anniversary = newDate;setClient(temp)}}/>
           <CentralCiclingContainer contentDisposition='center' content={<ProxyTextInput value={client.instagram} placeholder='Instagram' valueChanger={setInstagram}/>}/>        
-          <CentralCiclingContainer contentDisposition='center' content={client.phones.map((el:string,index:number)=><ProxyPhoneInput key={`PhoneNumber-${index}`} value={client.phones[index]} placeholder='(xx)00000-0000' valueChanger={(txt:string)=>{setPhone(txt,index)}}/>)}/>                            
+          <CentralCiclingContainer 
+            contentDisposition='center' 
+            content={Phones}/>                            
           <AddressComponent address={client.address} hocUpdater={setAddress}/>
+          
         </ScrollView>        
       </KeyboardAvoidingView>
     </SafeAreaView>          
   )
 }
-
+// <ProxyPhoneInput key={`PhoneNumber-${index}`} value={client.phones[index]} placeholder='(xx)00000-0000' valueChanger={(txt:string)=>{setPhone(txt,index)}}/>
 
 function  ProxyTextInput(props:ProxyTextInputProps):JSX.Element{
   const [innerValue,setInnerValue]  = React.useState<string>(props.value?props.value:'');
@@ -171,43 +199,7 @@ function  ProxyTextInput(props:ProxyTextInputProps):JSX.Element{
     />
   )
 }
-function  ProxyPhoneInput(props:ProxyPhoneInputProps){
-  const [innerValue,setInnerValue]  = React.useState<string>(props.value?props.value:'');
 
-  function localChanger({ nativeEvent: { eventCount, target, text} }:{nativeEvent:TextInputChangeEventData}){    
-    setInnerValue(text.replace(/\D/g,''));
-  }
-  function hocUpdater({ nativeEvent: { text} }:{nativeEvent:TextInputSubmitEditingEventData}){
-    props.valueChanger(text);
-  }
-
-  const style = StyleSheet.create({
-    inputStyle:{
-      width:'100%',          
-      fontSize:height*0.023,
-      color:colorPalet.darkGrey,
-      textAlign:'center',
-      alignSelf:'center'
-    },
-    regular:{
-      fontFamily:fonts.regular,
-    },
-    bold:{
-      fontFamily:fonts.bold,
-    }
-  })
-  return (
-    <TextInput 
-      style={[style.inputStyle,style.regular]}
-      keyboardType='phone-pad'
-      value={innerValue}
-      onChange={localChanger}      
-      placeholder={props.placeholder}
-      //onChangeText={}
-      onSubmitEditing={hocUpdater}      
-    />
-  )
-}
 function  AnniversaryComponent(props:AnniversaryComponentProps){
   const breathBase = React.useRef<Animated.Value>(new Animated.Value(0)).current;
   const [openPicker,setOpenPicker]  = React.useState(false);
@@ -278,12 +270,12 @@ const s = StyleSheet.create({
   title:{    
     fontFamily:fonts.bold,
     color:colorPalet.darkGrey,
-    fontSize:height*0.05
+    fontSize:Number.parseFloat((height*0.05).toFixed(2))
   },  
   TextInputStyle:{
     width:'100%',    
     fontFamily:fonts.bold,
-    fontSize:height*0.023,
+    fontSize:Number.parseFloat((height*0.023).toFixed(2)),
     color:colorPalet.darkGrey,
     textAlign:'center',
     alignSelf:'center'
@@ -291,7 +283,7 @@ const s = StyleSheet.create({
   TextInputPlaceholder:{
     width:'100%',    
     fontFamily:fonts.regular,
-    fontSize:height*0.023,
+    fontSize:Number.parseFloat((height*0.023).toFixed(2)),
     color:colorPalet.darkGrey,
     textAlign:'center',
     alignSelf:'center'
@@ -307,5 +299,15 @@ const s = StyleSheet.create({
     marginHorizontal:width*0.1,            
     paddingHorizontal:15,
     paddingVertical:4
+  },
+  phoneStyle:{
+    backgroundColor:colorPalet.white,        
+    borderWidth:StyleSheet.hairlineWidth,    
+    borderRadius:10,
+    textAlign:'center',        
+    fontSize:Number.parseFloat((height*0.022).toFixed(2)),
+    fontFamily:fonts.regular,
+    color:colorPalet.darkGrey,
+    paddingHorizontal:width*0.05
   }
 })

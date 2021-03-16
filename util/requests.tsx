@@ -174,8 +174,7 @@ export async function patchClient(newClient:Partial<client>) : Promise<client[]>
 		});
 		let params = {};		
     const result = await worker.patch('/entities',{entity:{...newClient}});
-    const {data} = result
-    console.log(result.status);
+    const {data} = result    
 		return data
   }catch(e){
     throw e;
