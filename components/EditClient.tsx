@@ -1,5 +1,5 @@
 import React from 'react';
-import {Animated,View,Dimensions,Text,StyleSheet,TextInput,ScrollView,Platform,Pressable,KeyboardAvoidingView, Image,TouchableHighlight} from 'react-native';
+import {Animated,View,Dimensions,Text,StyleSheet,TextInput,ScrollView,Platform,Pressable,KeyboardAvoidingView, Image,TouchableOpacity,Easing} from 'react-native';
 import {TextInputChangeEventData,TextInputSubmitEditingEventData} from 'react-native';
 import CentralCiclingContainer from './AuxComponents/CentralCiclingContainer';
 import {client,colorPalet,fonts,address,ComponentWithNavigationProps, rgbColorPallet}  from '../util/util';
@@ -29,7 +29,8 @@ interface AnniversaryComponentProps extends React.ComponentPropsWithoutRef<"view
 const {height,width}  = Dimensions.get('window');
 const images  = {
   cake: require('../assets/icons/Bolo.png'),
-  plus: require('../assets/icons/Plus.png')
+  plus: require('../assets/icons/Plus.png'),
+  delete: require('../assets/icons/Delete.png')
 }
 export default function EditClient(props:EditClientProps) :  JSX.Element {  
   const newClient : client  = {
@@ -52,7 +53,7 @@ export default function EditClient(props:EditClientProps) :  JSX.Element {
     anniversary:new Date(0),
     instagram:'',
     since:new Date(),
-    phones:['']
+    phones:[]
   }
   const params : {client:client} = (props.route.params as {client:client})
   const [client,setClient]  = React.useState<client>(params?.client ? params?.client : newClient);  
@@ -79,6 +80,11 @@ export default function EditClient(props:EditClientProps) :  JSX.Element {
   function addPhone(){
     const temp = {...client};
     temp.phones.push('');
+    setClient(temp);
+  }
+  function removePhone(index:number){
+    const temp = {...client};
+    temp.phones.splice(index,1);
     setClient(temp);
   }
   function setAddress(newAddress:Partial<address>):void{
@@ -123,25 +129,61 @@ export default function EditClient(props:EditClientProps) :  JSX.Element {
     }
   }
 
-  const AddPhone : JSX.Element = (
-    <View>
-      <TouchableHighlight underlayColor={colorPalet.green} onPress={addPhone} style={{position:'absolute'}}>
-        <Image source={images.plus} style={{height:height*0.02,width:height*0.02,margin:height*0.015}}/>
-      </TouchableHighlight>
-    </View>
-  )
-  const Phones : JSX.Element = (
-    <View>      
-      {client.phones.map((el:string,index:number,arr:string[])=>(
-        <View style={{flexDirection:'row',alignSelf:'center'}}>
-          <MaskedTextInput key={`PhoneNumber-${index}`} value={client.phones[index]} hocUpdater={(txt:string)=>setPhone(txt,index)} mask='phone' style={s.phoneStyle}/>
-          {index+1 === arr.length ? AddPhone : undefined}
-          
-        </View>
-        ))}
-      
-    </View>
-  )
+  const AddPhone =function(props:React.ComponentPropsWithoutRef<'view'>):React.ReactElement {
+    return (
+      <View>
+        <TouchableOpacity  onPress={addPhone} style={{alignSelf:'center'}}>
+          <Image source={images.plus} style={{height:height*0.02,width:height*0.02,margin:height*0.015}} />
+        </TouchableOpacity >
+      </View>
+    )
+  }  
+  const Phones = function(props:React.ComponentPropsWithoutRef<'view'>) : React.ReactElement{    
+    return (
+      <View style={{width:'100%'}}>      
+        {client.phones.map((el:string,index:number,arr:string[])=><PhoneRow key={`PhoneNumber-${index}`} index={index} />)}
+        <AddPhone />
+      </View>
+    )
+  }
+  const PhoneRow = function(props:(React.ComponentPropsWithoutRef<'view'> & {index:number})) : React.ReactElement{
+
+    const tiltBase  = React.useRef<Animated.Value>(new Animated.Value(0)).current;
+    const colorBase = React.useRef<Animated.Value>(new Animated.Value(0)).current;
+
+    const msToEdit      = 1000;
+    const tiltDuration  = 80;
+
+    const tiltLeft    = Animated.timing(tiltBase,{toValue:-1,duration:tiltDuration/2,useNativeDriver:false});
+    const tiltRight   = Animated.timing(tiltBase,{toValue:1,duration:tiltDuration/2,useNativeDriver:false});
+    const straighten  = Animated.timing(tiltBase,{toValue:0,duration:tiltDuration/4,useNativeDriver:false});
+    const shake       = Animated.loop(Animated.sequence([tiltRight,tiltLeft,tiltRight,straighten]),{iterations:-1});  
+
+    const toRed       = Animated.timing(colorBase,{toValue:1,duration:msToEdit,easing:Easing.ease,useNativeDriver:false})
+    const toWhite     = Animated.timing(colorBase,{toValue:0,duration:msToEdit,easing:Easing.ease,useNativeDriver:false})
+
+    const holding     = Animated.parallel([toRed,shake])
+    const release     = Animated.parallel([straighten,toWhite])
+
+    const degTilt     = tiltBase.interpolate({inputRange:[-1,1],outputRange:['-2deg','2deg']});
+    const finalColor  = colorBase.interpolate({inputRange:[0,1],outputRange:[colorPalet.white,colorPalet.red]});
+
+    return (
+      <Pressable 
+        onPressIn={()=>Animated.parallel([holding]).start()} 
+        onPressOut={()=>{release.start()}} 
+        onLongPress={()=>{removePhone(props.index)}}
+        style={{width:'100%'}} 
+        delayLongPress={1000}
+        >  
+        <Animated.View style={{flexDirection:'row',justifyContent:'center',backgroundColor:finalColor,width:'100%',borderRadius:10,transform:[{rotate:degTilt}]}} >
+          <MaskedTextInput  value={client.phones[props.index]} hocUpdater={(txt:string)=>setPhone(txt,props.index)} mask='phone' style={client.phones[props.index] ? s.phoneStyle : s.phoneStylePlaceholder} placeholder='(xx) 99999-9999'/>
+        </Animated.View>
+      </Pressable>  
+    )
+
+  }
+ 
   return (    
     <SafeAreaView style={s.screen}>      
     <View style={{width:'80%',height:height*0.1,alignItems:'center',marginVertical:height*0.02}}>        
@@ -165,10 +207,10 @@ export default function EditClient(props:EditClientProps) :  JSX.Element {
         <ScrollView contentContainerStyle={s.screen}>              
           <CentralCiclingContainer contentDisposition='center' content={<ProxyTextInput value={client.name} placeholder='Nome' valueChanger={setName}/>}/>        
           <AnniversaryComponent value={new Date(client.anniversary)} hocUpdater={(newDate:Date)=>{const temp = {...client};temp.anniversary = newDate;setClient(temp)}}/>
-          <CentralCiclingContainer contentDisposition='center' content={<ProxyTextInput value={client.instagram} placeholder='Instagram' valueChanger={setInstagram}/>}/>        
+          <CentralCiclingContainer contentDisposition='center' content={<ProxyTextInput value={client.instagram} placeholder='@Insta' valueChanger={setInstagram}/>}/>        
           <CentralCiclingContainer 
             contentDisposition='center' 
-            content={Phones}/>                            
+            content={<Phones />}/>                            
           <AddressComponent address={client.address} hocUpdater={setAddress}/>
           
         </ScrollView>        
@@ -189,7 +231,7 @@ function  ProxyTextInput(props:ProxyTextInputProps):JSX.Element{
   }
   return (
     <TextInput 
-      style={s.TextInputStyle}
+      style={innerValue ? s.TextInputStyle : s.TextInputPlaceholder}
       value={innerValue}
       onChange={localChanger}      
       placeholder={props.placeholder}
@@ -301,13 +343,21 @@ const s = StyleSheet.create({
     paddingVertical:4
   },
   phoneStyle:{
-    backgroundColor:colorPalet.white,        
-    borderWidth:StyleSheet.hairlineWidth,    
-    borderRadius:10,
-    textAlign:'center',        
+    backgroundColor:'rgba(255, 255, 255, 0.0)',
+    width:'50%',
+    textAlign:'center',            
+    fontSize:Number.parseFloat((height*0.022).toFixed(2)),
+    fontFamily:fonts.bold,
+    color:colorPalet.darkGrey,
+    paddingHorizontal:width*0.01
+  },
+  phoneStylePlaceholder:{
+    backgroundColor:'rgba(255, 255, 255, 0.0)',
+    width:'50%',
+    textAlign:'center',            
     fontSize:Number.parseFloat((height*0.022).toFixed(2)),
     fontFamily:fonts.regular,
     color:colorPalet.darkGrey,
-    paddingHorizontal:width*0.05
+    paddingHorizontal:width*0.01
   }
 })

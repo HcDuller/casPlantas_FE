@@ -75,7 +75,7 @@ export default function Products(props:ProductProps) : JSX.Element{
         {loadingProds && prods.length>0 ? undefined : 
           <FlatList 
             data={prods.filter((el:product)=>{if(showAll){return true}else{return el.active}}).map((el:product)=>{return {id:el._id,...el}})}
-            renderItem={({item}:{item:product})=>(<ProdCard height={height*0.08} width={width*0.8} data={item} key={item?._id} edit={()=>editProduct(item)}/>)}            
+            renderItem={({item}:{item:product})=>(<ProdCard height={height*0.06} width={width*0.8} data={item} key={item?._id} edit={()=>editProduct(item)}/>)}            
           />
         }        
       </View>      

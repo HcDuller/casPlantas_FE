@@ -3,6 +3,7 @@ import {View,StyleSheet,Text,Dimensions,Image,TouchableOpacity} from 'react-nati
 import AutocompleteInput from './AutocompleteInput';
 import CentralCiclingContainer from './CentralCiclingContainer';
 import {colorPalet,fonts,address} from '../../util/util';
+import { TextInput } from 'react-native-gesture-handler';
 
 const {height,width}  = Dimensions.get('window');
 
@@ -27,9 +28,14 @@ export default function AddressComponent(props:AddressComponentProps){
       alert('Endereco deu PAU!')
     }
   }
-  const AddressF = ()=><Text style={[s.addressDefaults,s.addressF]}>{`${props.address.street}, ${props.address.number}`}</Text>
-  const AddressS = ()=><Text style={[s.addressDefaults,s.addressS]}>{`${props.address.district}`}</Text>
-  const AddressT = ()=><Text style={[s.addressDefaults,s.addressS,{paddingBottom:4}]}>{`${props.address.town}`}</Text>
+  function updateDetails(s:string){
+    const temp = props.address;
+    temp.detail = s;
+    props.hocUpdater(temp);
+  }
+  const AddressF = ()=><Text      style={[s.addressDefaults,s.addressF]}>{`${props.address.street}, ${props.address.number}`}</Text>
+  const AddressS = ()=><Text      style={[s.addressDefaults,s.addressS]}>{`${props.address.district} - ${props.address.town}`}</Text>
+  const AddressT = ()=><TextInput style={[s.addressDefaults,s.addressS,{paddingBottom:4}]} onSubmitEditing={({nativeEvent: {text}})=>updateDetails(text)} placeholder='Detalhes' >{`${props.address.detail}`}</TextInput>
   const AddressWrapper = () => (
     <View style={{flexDirection:'row'}}>
       <Image source={require('../../assets/icons/pin.png')} style={{height:height*0.05,width:height*0.05,alignSelf:'center',marginHorizontal:width*0.06,tintColor:colorPalet.darkGrey,marginVertical:0}}/>
