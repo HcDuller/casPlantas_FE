@@ -10,6 +10,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import ProgressBar from './AuxComponents/ProgressBar';
 import CentralCiclingContainer from './AuxComponents/CentralCiclingContainer';
 import { NavigationProp} from '@react-navigation/native';
+import MaskedTextInput from './AuxComponents/MaskedTextInput'
 
 
 type selectdProdProps = { selectedClass: number, selectedSubClass: number };
@@ -98,6 +99,7 @@ function parseProduct(product:product) : Partial<product> & selectdProdProps {
 export default function NewEditProduct(props: NewEditProductProps): JSX.Element {
   
   const parsedProd : (Partial<product> & selectdProdProps) | boolean = props?.route?.params?.product ? parseProduct(props.route.params.product) : false;
+
   const tempProd: Partial<product> & selectdProdProps = parsedProd ? parsedProd : defaultNewProduct;  
   const [product, setProduct] = React.useState<Partial<product> & selectdProdProps>(tempProd);  
   const [prodOpt,setProdOpt]  = React.useState<productOptions | undefined>(undefined);
@@ -154,14 +156,10 @@ export default function NewEditProduct(props: NewEditProductProps): JSX.Element 
       tempProd.subClass = (productSubClassOptd[newIndex][0] as typeof product.subClass);
     }
     setProduct(tempProd);
-  }
-  function valueIncrement(increment: number) {
-    const previousValue = product.value ? product.value : 0;
-    const tempProd = { ...product, value: previousValue + increment };
-    setProduct(tempProd);
-  }
-  function valueChange(newValue: number) {
-    const tempProd = { ...product, value: newValue };
+  } 
+  function valueChange(newValue: string) {    
+    const tempProd = { ...product };
+    tempProd.value =Number.parseFloat(newValue);
     setProduct(tempProd);
   }
   function nameChange(text: string) {
@@ -196,66 +194,7 @@ export default function NewEditProduct(props: NewEditProductProps): JSX.Element 
       />
     )
   }
-  function ValueInput(props: {
-    value: number | undefined,
-    onChange: (text: number) => void
-  }) {
-    const [innerValue, setInnerValue] = React.useState<string>(props.value ? padronizeValue(props.value.toFixed(2)) : '0.00');
-    const l = StyleSheet.create({
-      localStyle: {
-        fontFamily: 'AlegreyaSans-Bold',
-        fontSize: height * 0.023,
-        color: colorPalet.darkGrey,
-        textAlign: 'center',
-        alignSelf: 'center',
-        width: width * 0.4,
-      }
-    })
-    function padronizeValue(text: string) {
-      const strArray = Array.from(text.replace('R$', '')).filter(el => {
-        const blank = el === ' ';
-        const comma = el === ',';
-        const dot = el === '.';
-        return !(blank || comma || dot);
-      });  // removeu R$ espacos e pontos
-      if (strArray.length > 0) {
-        while (strArray[0] === '0') {
-          strArray.shift()
-        }
-      }
-
-      switch (strArray.length) {
-        case 0:
-          strArray.push('0', '.', '0', '0',);
-          break;
-        case 1:
-          strArray.splice(0, 0, '0', '.', '0');
-          break;
-        case 2:
-          strArray.splice(0, 0, '0', '.');
-          break;
-        default:
-          strArray.splice(strArray.length - 2, 0, '.');
-          break;
-      }
-      const finalValue = strArray.join('');
-      return finalValue;
-    }
-    function onValueChange(text: string) {
-      const teste = padronizeValue(text)
-      setInnerValue(teste);
-    }
-    return (
-      <TextInput
-        style={l.localStyle}
-        allowFontScaling={true}
-        onChangeText={onValueChange}
-        onSubmitEditing={() => { const parsedValue = parseFloat(innerValue); valueChange(parsedValue) }}
-        value={'R$ ' + innerValue}
-        keyboardType='decimal-pad'
-      />
-    )
-  }
+  
   function optionActivator(index:number,newActiveState:boolean){
     const tempProd = {...product};    
     if(tempProd.options){
@@ -287,7 +226,7 @@ export default function NewEditProduct(props: NewEditProductProps): JSX.Element 
       setModalStatus(true);
       setProdOpt(option);
     }
-  }  
+  }    
   //simpleDelay
   //{loading?(<ProgressBar width={width} height={height*0.005} color={colorPalet.darkGreen} duration={2000}/>):undefined}
   return (
@@ -321,12 +260,10 @@ export default function NewEditProduct(props: NewEditProductProps): JSX.Element 
             value={product.name}
           />}
         />
-        <CentralCiclingContainer
-          onLeftPress={() => valueIncrement(-1)}
-          onRightPress={() => valueIncrement(1)}
-          content={<ValueInput
-            value={product.value}
-            onChange={() => { }} />}
+        <CentralCiclingContainer         
+          content={
+            <MaskedTextInput mask='currency' value={product.value ? product.value.toString() : '0'} hocUpdater={valueChange} placeholder='R$ 99.99' style={{...s.textInput,...s.filledInput}}/>
+          }
         />        
         <ProductOptions
           data={(product.options as productOptions[])}
@@ -343,5 +280,22 @@ export default function NewEditProduct(props: NewEditProductProps): JSX.Element 
 const fontStyleObj = fontStyle(width);
 
 const s = StyleSheet.create({
-  ...fontStyleObj
+  title:{
+    fontFamily:fonts.bold,
+    fontSize:height*0.022,
+    color:colorPalet.darkGrey    
+  }, 
+  textInput:{    
+    fontSize: height * 0.023,
+    color: colorPalet.darkGrey,
+    textAlign: 'center',
+    alignSelf: 'center',
+    width: width * 0.7
+  },
+  filledInput:{
+    fontFamily:fonts.bold
+  },
+  emptyInput:{
+    fontFamily:fonts.regular
+  }
 })

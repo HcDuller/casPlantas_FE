@@ -54,6 +54,7 @@ export default function MaskedTextInput(props:MaskedTextInputProps) : JSX.Elemen
         maxLength = 15;
         return phoneMask;    
       case  'currency':
+        maxLength = 15;
         return currencyMask;        
       default:
         return (s:string)=>s

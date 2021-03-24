@@ -184,7 +184,7 @@ export const rgbColorPallet = {
 }
 export const fonts={
   regular:'AlegreyaSans-Regular',
-  bold:'AlegreyaSans-Bold'
+  bold:   'AlegreyaSans-Bold'
 }
 export const endpoint = 'http://192.168.15.50:3000';
 export function fontStyle(windowHeight:number){

@@ -8,6 +8,8 @@ import { NavigationProp } from '@react-navigation/native';
 
 import {getProductsRequest} from '../util/requests';
 import {colorPalet, product, navProp} from '../util/util';
+import CentralCiclingContainer from './AuxComponents/CentralCiclingContainer';
+import { TextInput } from 'react-native-gesture-handler';
 
 
 const height = Dimensions.get('window').height;
@@ -58,6 +60,17 @@ export default function Products(props:ProductProps) : JSX.Element{
   function editProduct(product:product){
     props.navigation.navigate('prodEdit',{product:product})
   }
+  function sortProds(a:product,b:product){
+    const aName = a.name.toUpperCase();
+    const bName = b.name.toUpperCase();
+    if(aName < bName){
+      return -1;
+    }else if(aName > bName){
+      return 1;
+    }else{
+      return 0;
+    }
+  }
   return (
     <SafeAreaView style={s.screen}>      
       <View style={{alignItems:"center",justifyContent:"center"}}>
@@ -72,9 +85,10 @@ export default function Products(props:ProductProps) : JSX.Element{
         <Image source={require('../assets/icons/logo.png')} style={{height:logoDimentions,width:logoDimentions,position:'absolute'}}/>
       </View>
       <View style={s.centralContainer}>
+        <CentralCiclingContainer content={<TextInput />}/>
         {loadingProds && prods.length>0 ? undefined : 
           <FlatList 
-            data={prods.filter((el:product)=>{if(showAll){return true}else{return el.active}}).map((el:product)=>{return {id:el._id,...el}})}
+            data={prods.filter((el:product)=>{if(showAll){return true}else{return el.active}}).sort(sortProds).map((el:product)=>{return {id:el._id,...el}})}
             renderItem={({item}:{item:product})=>(<ProdCard height={height*0.06} width={width*0.8} data={item} key={item?._id} edit={()=>editProduct(item)}/>)}            
           />
         }        
