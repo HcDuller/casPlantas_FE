@@ -124,6 +124,7 @@ export default function EditOrder({route,navigation}:{route:Route<'editOrder'>,n
           <View style={s.totalContainer}>
             <Text style={[s.carSubTitleHeader,{alignSelf:'center'}]}>Total {order.reserves.reduce((tot:number, res:reserve) => tot + res.value*res.quantity)}</Text>
           </View>
+          
         </View>
       )
     }else{      

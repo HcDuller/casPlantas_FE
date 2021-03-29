@@ -38,6 +38,7 @@ const endPoint = 'http://192.168.15.50:3000'
 export async function ordersGetRequest(filters?:Partial<orderQuery>){
   try{    
     const worker = axios.create({
+      
       baseURL:endPoint,
       headers:globalHeader,
       timeout:1000            
