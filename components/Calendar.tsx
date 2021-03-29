@@ -1,8 +1,12 @@
 
 import React from 'react';
-import {Text,TouchableOpacity,View,StyleSheet,Dimensions} from 'react-native'
+import {Text,TouchableOpacity,View,StyleSheet,Dimensions,Image} from 'react-native'
 import {calendarArray,day,weekLine,calendar,order,colorPalet} from '../util/util';
 
+const images ={
+  arrowLeft:  require('../assets/icons/Arrow_L.png'),
+  arrowRight: require('../assets/icons/Arrow_R.png')
+}
 
 function CalendarLines(props:{calendar:calendar,onDatePress?:(newDate:Date)=>Promise<void>}) : JSX.Element {
   const {calendar} = props
@@ -53,7 +57,15 @@ export function Calendar(props:{activeDate:Date,orders:order[],month:number,chan
   const [calendar,setCalendar] = React.useState(calendarArray(props.activeDate,props.orders));
   
   const months = ['January','February','March','April','May','June','July','August','September','October','November','December']
+/* Arrows
+          <Text style={{fontFamily:'AlegreyaSans-Bold',textAlign:'right',fontSize:20,color:colorPalet.darkGrey}}>
+            {'<'}&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+          </Text>
 
+          <Text style={{fontFamily:'AlegreyaSans-Bold',textAlign:'left',fontSize:20,color:colorPalet.darkGrey}}>
+            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{'>'}
+          </Text>
+*/
   React.useEffect(()=>{    
     (async()=>await setCalendar(calendarArray(props.activeDate,props.orders)))()
   },[props.orders])
@@ -61,26 +73,22 @@ export function Calendar(props:{activeDate:Date,orders:order[],month:number,chan
     <>
       <View style={s.monthLine}>
         <TouchableOpacity 
-          style={{width:Math.floor(availableWidth/3)}}
+          style={{width:Math.floor(availableWidth/3),flexDirection:'row',justifyContent:'flex-end'}}
           onPress={()=>{props.changeMonth(-1)}}  
         >
-          <Text style={{fontFamily:'AlegreyaSans-Bold',textAlign:'right',fontSize:20}}>
-            {'<'}&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-          </Text>
+          <Image source={images.arrowLeft} style={{tintColor:colorPalet.darkGrey,height:15,width:15}}/>
         </TouchableOpacity>        
         <TouchableOpacity 
           style={{width:Math.floor(availableWidth/3)}}>
-          <Text style={{fontFamily:'AlegreyaSans-Bold',textAlign:'center',fontSize:20}}>
-            {`${months[props.month]}`}
-          </Text>
+          <Text style={{fontFamily:'AlegreyaSans-Bold',textAlign:'center',fontSize:20,color:colorPalet.darkGrey}}>
+            {`${months[props.month]} • ${props.activeDate.getFullYear()}`}
+          </Text>          
         </TouchableOpacity>
         <TouchableOpacity 
           style={{width:Math.floor(availableWidth/3)}}
           onPress={()=>{props.changeMonth(1)}}  
         >
-          <Text style={{fontFamily:'AlegreyaSans-Bold',textAlign:'left',fontSize:20}}>
-            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{'>'}
-          </Text>
+          <Image source={images.arrowRight} style={{tintColor:colorPalet.darkGrey,height:15,width:15}}/>          
         </TouchableOpacity>
       </View>
       <View style={s.whiteContainer}>

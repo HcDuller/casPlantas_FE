@@ -1,5 +1,6 @@
 import React from 'react';
 import {StyleSheet,View,FlatList,Dimensions,TouchableOpacity,Image,Text} from 'react-native';
+import MaskedTextInput from './AuxComponents/MaskedTextInput'
 import CleanHeader from './AuxComponents/CleanHeader';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import ProdCard from './AuxComponents/ProductCard';
@@ -7,16 +8,19 @@ import { AntDesign } from '@expo/vector-icons';
 import { NavigationProp } from '@react-navigation/native';
 
 import {getProductsRequest} from '../util/requests';
-import {colorPalet, product, navProp} from '../util/util';
+import {colorPalet, product, navProp, fonts} from '../util/util';
 import CentralCiclingContainer from './AuxComponents/CentralCiclingContainer';
-import { TextInput } from 'react-native-gesture-handler';
+import { Switch, TextInput } from 'react-native-gesture-handler';
 
 
 const height = Dimensions.get('window').height;
 const width = Dimensions.get('window').width;
 const logoDimentions = Math.floor(height*0.1);
 
-
+const images = {
+  search : require('../assets/icons/Search.png'),
+  delete : require('../assets/icons/Delete.png')
+}
 
 async function getProds(){
   try{
@@ -33,9 +37,10 @@ interface ProductProps extends React.ComponentPropsWithRef<"view">{
 }
 export default function Products(props:ProductProps) : JSX.Element{
 
-  const [prods,setProds] = React.useState([]);
+  const [prods,setProds] = React.useState<product[]>([]);
   const [showAll,setShowAll]  = React.useState<boolean>(false);
-  const [loadingProds,setLoadingProds] = React.useState(true);
+  const [textFilter,setTextFilter]  = React.useState<string>('')
+  const [loadingProds,setLoadingProds] = React.useState<boolean>(true);
 
   React.useEffect(()=>{    
     (async()=>{
@@ -71,6 +76,28 @@ export default function Products(props:ProductProps) : JSX.Element{
       return 0;
     }
   }
+  function changeTextFilter(a:string):void{    
+    setTextFilter(a);
+  }  
+  const FilterRow : ()=>JSX.Element = ()=>(
+    <View style={{flexDirection:'row',justifyContent:'space-between',alignItems:'center'}}>
+      <View style={{flexDirection:'row',overflow:'scroll'}}>
+        <MaskedTextInput mask='none' value={textFilter} hocUpdater={changeTextFilter} placeholder='Buscar por nome' style ={{...s.defaultText,...s.placeholder,width:width*0.53}}/>        
+        <Image source={images.search} style={{height:height*0.03,width:height*0.03,tintColor:colorPalet.green,marginHorizontal:width*0.03,alignSelf:'center'}}/>
+      </View>
+      <View style={{alignContent:'center',alignItems:'center',paddingHorizontal:15,borderLeftWidth:1,borderLeftColor:colorPalet.darkGrey}}>
+        <Text style={s.switchText}>Inativos</Text>
+        <Switch 
+          trackColor={{ false: colorPalet.grey, true: colorPalet.green }}
+          thumbColor={showAll ? colorPalet.green : colorPalet.grey}
+          ios_backgroundColor="#3e3e3e"
+          onValueChange={()=>setShowAll(!showAll)}
+          value={showAll}
+        />
+      </View>
+    </View>
+  )
+  
   return (
     <SafeAreaView style={s.screen}>      
       <View style={{alignItems:"center",justifyContent:"center"}}>
@@ -85,10 +112,10 @@ export default function Products(props:ProductProps) : JSX.Element{
         <Image source={require('../assets/icons/logo.png')} style={{height:logoDimentions,width:logoDimentions,position:'absolute'}}/>
       </View>
       <View style={s.centralContainer}>
-        <CentralCiclingContainer content={<TextInput />}/>
+        <CentralCiclingContainer content={<FilterRow />}/>        
         {loadingProds && prods.length>0 ? undefined : 
           <FlatList 
-            data={prods.filter((el:product)=>{if(showAll){return true}else{return el.active}}).sort(sortProds).map((el:product)=>{return {id:el._id,...el}})}
+            data={prods.filter((el:product)=>{if(showAll){return true}else{return el.active}}).filter((e:product)=>e.name.toUpperCase().includes(textFilter.toUpperCase().trim())).sort(sortProds).map((el:product)=>{return {id:el._id,...el}})}
             renderItem={({item}:{item:product})=>(<ProdCard height={height*0.06} width={width*0.8} data={item} key={item?._id} edit={()=>editProduct(item)}/>)}            
           />
         }        
@@ -105,6 +132,21 @@ const s = StyleSheet.create({
   centralContainer:{
     width:'100%',    
     alignItems:'center'
+  },
+  placeholder:{
+    fontFamily:fonts.regular
+  },
+  filledInput:{
+    fontFamily:fonts.bold
+  },
+  defaultText:{
+    fontSize:height*0.022,
+    marginHorizontal:width*0.02,    
+  },
+  switchText:{
+    fontSize:height*0.011,
+    fontFamily:fonts.regular,
+    color:colorPalet.darkGrey
   }
 });
 //{prods.map((prod : product)=>(<ProdCard height={height*0.08} width={width*0.8} data={prod} key={prod._id}/>))}

@@ -48,7 +48,12 @@ export async function ordersGetRequest(filters?:Partial<orderQuery>){
     data.forEach((el:any)=>{
       el.creationDate = new Date(el.creationDate);
       el.dueDate      = new Date(el.dueDate);
+      el.reserves.forEach((res:any)=>{
+        res.createdAt = new Date(res.createdAt);
+        res.lastUpdate = new Date(res.lastUpdate);
+      })
     });      
+
     return data;   
      
   }catch(e){

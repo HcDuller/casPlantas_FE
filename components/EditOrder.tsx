@@ -1,7 +1,7 @@
 import React from 'react';
 import {View,Text,TouchableOpacity,StyleSheet,Dimensions,Image,ScrollView} from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import {colorPalet,fonts,order,dateStringFromDate,reserve,isOrder,isReserve} from '../util/util';
+import {colorPalet,fonts,order,dateStringFromDate,reserve,isOrder,isReserve, productOptions} from '../util/util';
 import CleanHeader from './AuxComponents/CleanHeader';
 import {ordersGetRequest} from '../util/requests';
 import NavigationRow from './AuxComponents/NavigationRow';
@@ -12,13 +12,35 @@ interface ProductLineProps extends React.ComponentPropsWithoutRef<"view">{
   reserve:reserve
 }
 function ProductLine(props:ProductLineProps):JSX.Element{
-  const{name,_id,quantity=0,value=0,createdAt,lastUpdate,orderId,productId} = props.reserve;
+  const{name,_id,quantity=0,value=0,createdAt,lastUpdate,orderId,productId,availableOpt,selectedOpt} = props.reserve;
+  const displayedOpts : {name:string,type:string,keyId:string}[]= [];
+
+  selectedOpt.forEach((e:{_id:string,opt_id:string,selected_id:string})=>{
+    const opt = availableOpt.find((aOpt:productOptions)=>aOpt._id===e.opt_id);
+    const subOpt = opt?.options.find(sO=>sO._id===e.selected_id);
+    if(opt && subOpt){
+      displayedOpts.push({
+        name:opt.name,
+        type:subOpt.name,
+        keyId:e._id
+      })
+    }
+  })
+
   return (
-    <View style={{marginVertical:5}}>
-      <Text style={s.cardReserveHeaderText}>{name}</Text>
-      <View style={{flexDirection:'row',justifyContent:'space-between'}}>
-        <Text style={s.cardReserveHeaderText}>{`Quantidade: ${quantity}`}</Text>
-        <Text style={s.cardReserveHeaderText}>{`R$ ${value.toFixed().replace('.',',')}`}</Text>
+    <View style={{marginVertical:5,borderBottomWidth:StyleSheet.hairlineWidth,flexDirection:'row',justifyContent:'space-between'}}>
+      <View style={{flexDirection:'row'}}>
+      <View>
+        <Text style={[s.cardReserveHeaderText,{paddingRight:width*0.02}]}>{quantity.toString().padStart(2,'0')}</Text>                          
+      </View>
+      <View>
+        <Text style={s.productName}>{name}</Text>
+        {displayedOpts.map(e=><Text key={e.keyId} style={s.cardReserveHeaderText}>{`${e.name} - ${e.type}`}</Text>)}        
+      </View>
+      </View>
+      <View>
+        <Text style={s.cardReserveHeaderText}>{`R$ ${value.toFixed().replace('.',',')}`}</Text>        
+        <Text style={s.cardReserveHeaderText}>{`R$ ${(quantity*value).toFixed().replace('.',',')}`}</Text>
       </View>
     </View>  
   )
@@ -74,36 +96,37 @@ export default function EditOrder({route,navigation}:{route:Route<'editOrder'>,n
         }
       }
       return (
-        <View style={s.card}>        
+        <View style={s.card}>
           <View style={s.cardTitle}>
             <Text style={s.cardTitleText}>
               {`${dtObj.day}${String.fromCharCode(183)} ${dtObj.month[0]}  |  ${dtObj.weekDay[0]}  |  ${dtObj.hour}:${dtObj.minute}`}
             </Text>
             <TouchableOpacity>
-              <Image source={images.edit} style={s.cardTitleIcon}/>
+              <Image source={images.edit} style={s.cardTitleIcon} />
             </TouchableOpacity>
-          </View>            
-          <View style={s.cardSubTitle}>            
+          </View>
+          <View style={s.cardSubTitle}>
             <Text style={s.carSubTitleHeader}>{clientData.name}</Text>
-            {clientData.address !== '' ? <Text style={s.cardSubTitleDescription}>{clientData.address}</Text> : undefined}                        
-          </View>             
+            {clientData.address !== '' ? <Text style={s.cardSubTitleDescription}>{clientData.address}</Text> : undefined}
+          </View>
           <View style={s.cardReserveContaner}>
             <View style={s.cardReserveHeaderContainer}>
               <Text style={s.cardReserveHeaderText}>Pedido #{order.orderNumber}</Text>
               <View style={s.cardReserveHeaderIconContainer}>
-                <Image source={images.add} style={s.cardReserveHeaderIcon}/>
-                <Image source={images.edit} style={s.cardReserveHeaderIcon}/>
+                <Image source={images.add} style={[s.cardReserveHeaderIcon,{tintColor:colorPalet.green}]} />
+                <Image source={images.edit} style={s.cardReserveHeaderIcon} />
               </View>
             </View>
-            <ScrollView style={{flexGrow:1}}>
-              {/*order.reserves.map((e:reserve)=><ProductLine reserve={e} key={e._id}/>)*/}
-              {order.reserves.map((e:any)=>{isReserve(e) ? <ProductLine reserve={e} key={e._id}/> : undefined})}
-            </ScrollView>                        
+            <ScrollView style={{flexGrow:1}}>              
+              {order.reserves.map((e: any) => {return isReserve(e) ? <ProductLine reserve={e} key={e._id}/> : undefined })}
+            </ScrollView>
           </View>
-          <View style={s.totalContainer}></View>     
+          <View style={s.totalContainer}>
+            <Text style={[s.carSubTitleHeader,{alignSelf:'center'}]}>Total {order.reserves.reduce((tot:number, res:reserve) => tot + res.value*res.quantity)}</Text>
+          </View>
         </View>
       )
-    }else{
+    }else{      
       return <></>
     }
     
@@ -186,8 +209,7 @@ const s = StyleSheet.create({
     color:colorPalet.darkGrey,    
   },
   cardReserveContaner:{
-    paddingHorizontal:width*0.05,
-    borderBottomColor:colorPalet.darkGrey,    
+    paddingHorizontal:width*0.05,    
   },
   cardReserveHeaderContainer:{
     flexDirection:'row',
@@ -199,8 +221,14 @@ const s = StyleSheet.create({
     borderBottomColor:colorPalet.darkGrey
   },
   cardReserveHeaderText:{
+    textTransform:'capitalize',
     fontFamily:fonts.regular,
-    fontSize:height*0.02,
+    fontSize:height*0.018,
+    color:colorPalet.darkGrey,    
+  },
+  productName:{
+    fontFamily:fonts.bold,
+    fontSize:height*0.018,
     color:colorPalet.darkGrey,    
   },
   cardReserveHeaderIconContainer:{
@@ -219,6 +247,8 @@ const s = StyleSheet.create({
     position:'absolute',
     bottom:0,
     width:'100%',
-    paddingHorizontal:width*0.05
+    paddingHorizontal:width*0.05,
+    flexDirection:'row',
+    justifyContent:'flex-end'
   }
 })

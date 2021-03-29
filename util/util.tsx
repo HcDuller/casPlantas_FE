@@ -120,7 +120,13 @@ export interface reserve{
   createdAt: Date,
   lastUpdate: Date,
   orderId: string,
-  productId: string
+  productId: string,
+  availableOpt:productOptions[],
+  selectedOpt:{
+    _id:string,
+    opt_id:string,
+    selected_id:string
+  }[]
 }
 
 export type day      = {date:Date,activeMonth:boolean,orders:order[]|[]}
@@ -132,24 +138,23 @@ export function calendarArray(date:Date,events?: order[]) : calendar{
   const lastDay = new Date(date.getFullYear(),date.getMonth()+1,0);
   const days = [];  
   const fator = (firstDay.getDay()*-1 +1);
-  
-  for(let i = fator; i < 41 ;i++){    
-    const tempDate = new Date(firstDay.getFullYear(),date.getMonth(),i);    
-    const tempEvents = events ? events : [];
+  const tempEvents = events ? events : [];
+
+  for(let i = fator; i < 42+fator ;i++){    
+    const tempDate = new Date(firstDay.getFullYear(),date.getMonth(),i);        
     const tempOrders = tempEvents?.filter((el:order) => {      
       const year    = el.dueDate.getFullYear()  === tempDate.getFullYear();
       const month   = el.dueDate.getMonth()     === tempDate.getMonth();
       const day     = el.dueDate.getDate()      === tempDate.getDate();
       return  year && month && day;
-    })    
+    });    
     const temp ={
       date: tempDate,
       activeMonth: tempDate.getMonth() === firstDay.getMonth(),
       orders:tempOrders
     }      
     days.push(temp);
-  }
-
+  }  
   const result : calendar = [
     days.slice(0,7)   as day[],
     days.slice(7,14)  as day[],
@@ -170,6 +175,7 @@ export const colorPalet= {
   darkGrey:   '#5b5a5d',  
   darkGreen : '#617961',
   darkOrange: '#f8e0cc',  
+  reactDefPlaceholder: '#c7c7Cd',
 }
 export const rgbColorPallet = {
   purple:     'rgb(123,116,173)',
@@ -238,14 +244,16 @@ export function simpleDelay(time:number){
 }
 export function isReserve(reserve:any): reserve is reserve{
   const compiledValidations : boolean[] = [];  
-  reserve.hasOwnProperty('name')        ?   compiledValidations.push(typeof reserve.name        === 'string') : undefined;
-  reserve.hasOwnProperty('_id')         ?   compiledValidations.push(typeof reserve._id         === 'string') : undefined;
-  reserve.hasOwnProperty('quantity')    ?   compiledValidations.push(typeof reserve.quantity    === 'number') : undefined;
-  reserve.hasOwnProperty('value')       ?   compiledValidations.push(typeof reserve.value       === 'number') : undefined;
-  reserve.hasOwnProperty('createdAt')   ?   compiledValidations.push(Object.prototype.toString.call(reserve.createdAt) === '[object Date]') : undefined;
-  reserve.hasOwnProperty('lastUpdate')  ?   compiledValidations.push(Object.prototype.toString.call(reserve.lastUpdate) === '[object Date]') : undefined;
-  reserve.hasOwnProperty('orderId')     ?   compiledValidations.push(typeof reserve.orderId     === 'string') : undefined;
-  reserve.hasOwnProperty('productId')   ?   compiledValidations.push(typeof reserve.productId   === 'string') : undefined;  
+  // dateString matching .match(/[\d]{4}-[\d]{2}-[\d]{2}T[\d]{2}:[\d]{2}:[\d]{2}.[\d]{3}Z/)
+  reserve.hasOwnProperty('name')        ?   compiledValidations.push(typeof reserve.name        === 'string') : compiledValidations.push(false);
+  reserve.hasOwnProperty('_id')         ?   compiledValidations.push(typeof reserve._id         === 'string') : compiledValidations.push(false);
+  reserve.hasOwnProperty('quantity')    ?   compiledValidations.push(typeof reserve.quantity    === 'number') : compiledValidations.push(false);
+  reserve.hasOwnProperty('value')       ?   compiledValidations.push(typeof reserve.value       === 'number') : compiledValidations.push(false);
+  reserve.hasOwnProperty('createdAt')   ?   compiledValidations.push(Object.prototype.toString.call(reserve.createdAt)  === '[object Date]' ? true : false) : compiledValidations.push(false);
+  reserve.hasOwnProperty('lastUpdate')  ?   compiledValidations.push(Object.prototype.toString.call(reserve.lastUpdate) === '[object Date]' ? true : false) : compiledValidations.push(false);
+  reserve.hasOwnProperty('orderId')     ?   compiledValidations.push(typeof reserve.orderId     === 'string') : compiledValidations.push(false);
+  reserve.hasOwnProperty('productId')   ?   compiledValidations.push(typeof reserve.productId   === 'string') : compiledValidations.push(false);      
+  //console.log(`Validation ${compiledValidations}`);
   return compiledValidations.every(e=>e);
 }
 export function isOrder(order:any) : order is order{
@@ -260,11 +268,12 @@ export function isOrder(order:any) : order is order{
   order.hasOwnProperty('dueDate')       ?   compiledValidations.push(Object.prototype.toString.call(order.dueDate)      === '[object Date]')  : compiledValidations.push(false);
   
   //validar clientData
-  if(order.hasOwnProperty('clientData')){
+  if(order.hasOwnProperty('clientData')){    
     compiledValidations.push(isClient(order.clientData));
   }else{
     compiledValidations.push(false)
   }
+  
   //validar reserves
   if(order.hasOwnProperty('reserves')){
     try{
@@ -274,7 +283,8 @@ export function isOrder(order:any) : order is order{
     }
   }else{
     compiledValidations.push(false);
-  }  
+  }    
+  //console.log(`Validation ${compiledValidations}`);
   return compiledValidations.every(e=>e);
    
 }

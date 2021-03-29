@@ -1,12 +1,11 @@
 import React from 'react';
-import { Text, View, Image } from 'react-native';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { useFonts } from 'expo-font';
+import { StatusBar } from 'expo-status-bar';
 import AppLoading from 'expo-app-loading'
-//import { AppLoading } from 'expo';
 import { NavigationContainer } from '@react-navigation/native';
 import { createStackNavigator,CardStyleInterpolators,StackNavigationOptions } from '@react-navigation/stack';
-import {order,client} from './util/util';
+import {order,client,colorPalet} from './util/util';
 
 type RootStackParamList = {
   homeNavigation  : undefined,
@@ -43,6 +42,7 @@ export default function App() {
     }
     return (
       <NavigationContainer>
+        <StatusBar backgroundColor={colorPalet.white}/>
         <Stack.Navigator
           screenOptions={screenOptions}
           >

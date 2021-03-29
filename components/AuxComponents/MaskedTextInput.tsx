@@ -2,7 +2,7 @@ import React from 'react';
 import {StyleProp, StyleSheet,TextInput} from 'react-native';
 import {colorPalet} from '../../util/util';
 
-type mask = 'cep' | 'phone' | 'currency';
+type mask = 'cep' | 'phone' | 'currency' | 'none';
 interface MaskedTextInputProps extends React.ComponentPropsWithoutRef<'input'> {
   mask: mask,
   value: string,
@@ -37,14 +37,12 @@ function currencyMask(s:string):string{
   }  
   return 'R$ '+nS;
 }
-function updaterSwitch(a:string,type:mask,fn:(a:string|number)=>void){
 
-}
 export default function MaskedTextInput(props:MaskedTextInputProps) : JSX.Element {  
   const [innerValue,setInnerValue] = React.useState('')
   const hocProps : Partial<MaskedTextInputProps> = {...props};
   delete hocProps.mask
-  let maxLength = 0;
+  let maxLength = 50;
   const maskFunction : (s:string)=>string = (()=>{    
     switch(props.mask){
       case  'cep':        
@@ -74,8 +72,10 @@ export default function MaskedTextInput(props:MaskedTextInputProps) : JSX.Elemen
         return (s:string)=>{                    
           props.hocUpdater(s.replace(/[^\d]*/g,'').replace(/([\d]*)([\d]{2})$/,'$1.$2'))
         };        
-      default:
-        return (s:string)=>s
+      default:        
+        return (s:string)=>{                    
+          props.hocUpdater(s)
+        };     
     }    
   })();
   const keeper = (s:string)=>{
